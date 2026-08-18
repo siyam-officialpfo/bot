@@ -59,7 +59,7 @@ module.exports = {
 │ 📡 PING: ${ping}ms
 ├─────────────────
 
-  🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/official-siyam/siyam-bpot-V2-V3-V5-`;
+  🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/siyamxpro/siyamxpro.git`;
     } 
     
     else if (currentDesign === 1) {
@@ -80,7 +80,7 @@ module.exports = {
 
 📥 𝗚𝗜𝗧𝗛𝗨𝗕 𝗥𝗘𝗣𝗢𝗦𝗜𝗧𝗢𝗥𝗬
 
-🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/official-siyam/siyam-bpot-V2-V3-V5-`;
+🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/siyamxpro/siyamxpro.git`;
     } 
     
     else if (currentDesign === 2) {
@@ -97,7 +97,7 @@ module.exports = {
 
 ──────────────────
 
-»🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/official-siyam/siyam-bpot-V2-V3-V5-`;
+»🔗 𝗚𝗜𝗧𝗛𝗨𝗕 : https://github.com/siyamxpro/siyamxpro.git`;
     }
     
     await message.reply(card);
