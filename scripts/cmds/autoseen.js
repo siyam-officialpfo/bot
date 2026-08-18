@@ -4,9 +4,9 @@ const path = __dirname + "/cache/autoseen.json";
 // 🔒 AUTHOR LOCK
 const LOCKED_AUTHOR = "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
-// যদি ফাইল না থাকে, বানানো হবে
+// যদি ফাইল না থাকে, বাই-ডিফল্ট status: false দিয়ে ফাইল বানানো হবে
 if (!fs.existsSync(path)) {
-  fs.writeFileSync(path, JSON.stringify({ status: true }, null, 2));
+  fs.writeFileSync(path, JSON.stringify({ status: false }, null, 2));
 }
 
 // অটো জেনারেট বা মেসেজের ইংরেজি লেখাকে স্টাইলিশ করার ফাংশন
