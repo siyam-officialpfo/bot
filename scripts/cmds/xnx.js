@@ -13,21 +13,19 @@ module.exports = {
   config: {
     name: "xnx",
     aliases: ["xnx2"],
-    version: "0.0.2",
-    author: "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝗔𝗡",
+    version: "0.0.1",
+    author: "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
     countDown: 5,
     role: 0,
     shortDescription: { en: "Search and download videos" },
-    description: { en: "Search and download videos via reply (xnx with thumbnail, xnx2 without thumbnail)" },
+    description: { en: "Search and download videos via reply" },
     category: "media",
-    guide: { en: "{pn} <keyword> or {p}xnx2 <keyword>" }
+    guide: { en: "{pn} <keyword>" }
   },
 
-  onStart: async function ({ api, args, message, event, commandName }) {
-    if (this.config.author !== String.fromCharCode(55349, 56780, 55349, 56776, 55349, 56792, 55349, 56768, 55349, 56780, 45, 55349, 56775, 55349, 56768, 55349, 56786, 55349, 56768, 55349, 56781)) return;
-
+  onStart: async function ({ api, args, message, event, commandName, argsUsed }) {
     let base;
-    const creatorName = "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝗔𝗡";
+    const creatorName = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
     try {
       const configRes = await axios.get(nix);
@@ -39,10 +37,7 @@ module.exports = {
     }
 
     const query = args.join(" ");
-    if (!query) return api.sendMessage("⚠️ | Usage: xnx <keyword> or xnx2 <keyword>", event.threadID, event.messageID);
-
-    const usedCommand = event.body.split(" ")[0].toLowerCase();
-    const isXnx2 = usedCommand.includes("xnx2");
+    if (!query) return api.sendMessage(`⚠️ | Usage: ${commandName} <keyword>`, event.threadID, event.messageID);
 
     api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
@@ -63,7 +58,7 @@ module.exports = {
         const v = limitedResults[i];
         msg += `${i + 1}. ${v.title}\n⏱ ${v.duration || 'N/A'} | 👀 ${v.views || 'N/A'}\n\n`;
         
-        if (!isXnx2 && v.thumbnail) {
+        if (commandName !== "xnx2" && v.thumbnail) {
           try {
             thumbnails.push(await getStream(v.thumbnail));
           } catch (e) {}
@@ -72,18 +67,23 @@ module.exports = {
 
       api.setMessageReaction("✅", event.messageID, () => {}, true);
 
+      const messageObject = {
+        body: msg + "📝 | Reply with a number (1-6) to download.\n🖌️ Created by: " + creatorName
+      };
+
+      if (commandName !== "xnx2" && thumbnails.length > 0) {
+        messageObject.attachment = thumbnails;
+      }
+
       return api.sendMessage(
-        {
-          body: msg + "📝 | Reply with a number (1-6) to download.\n🖌️ Created by: " + creatorName,
-          attachment: thumbnails.length ? thumbnails : undefined
-        },
+        messageObject,
         event.threadID,
         (err, info) => {
           global.GoatBot.onReply.set(info.messageID, {
             results: limitedResults,
             messageID: info.messageID,
             author: event.senderID,
-            commandName: this.config.name,
+            commandName: commandName,
             base
           });
         },
@@ -97,10 +97,8 @@ module.exports = {
   },
 
   onReply: async function ({ api, event, Reply }) {
-    if (this.config.author !== String.fromCharCode(55349, 56780, 55349, 56776, 55349, 56792, 55349, 56768, 55349, 56780, 45, 55349, 56775, 55349, 56768, 55349, 56786, 55349, 56768, 55349, 56781)) return;
-
     const { results, author, messageID, base } = Reply;
-    const creatorName = "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝗔𝗡";
+    const creatorName = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
     
     if (event.senderID !== author) return;
 
