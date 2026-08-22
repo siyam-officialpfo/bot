@@ -18,9 +18,9 @@ module.exports = {
   onStart: async function ({ args, message, event }) {
 
     const DUMMY_OWNER = [
-      "61592612064543",
-      "61592697905168",
-      "61592186757564"
+      "61591371186179",
+      "61593360671710",
+      "61593771713736"
     ];
 
     const _0x1b4f = [
