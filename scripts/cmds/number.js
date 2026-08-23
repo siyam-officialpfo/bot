@@ -1,76 +1,143 @@
+const fs = require("fs-extra");
+
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
+
+const photoList = [
+	"https://files.catbox.moe/yltyr0.jpg",
+	"https://files.catbox.moe/lboo9k.jpg"
+];
+
+const numberList = [
+	"+880 1794-557929",
+	"+880 1798-510005",
+	"+880 1812-407912",
+	"+880 1816-563935",
+	"+880 1817-816034",
+	"+880 1821-950493",
+	"+880 1823-332793",
+	"+880 1824-385925",
+	"+880 1796-541222",
+	"+880 1816-682653",
+	"+880 1833-379632",
+	"+880 1839-940942",
+	"+880 1840-033951",
+	"+880 1851-451008",
+	"+880 1882-253387",
+	"+880 1923-831389",
+	"+880 1311-916635",
+	"+880 1312-064752",
+	"+880 1312-198815",
+	"+880 1312-237451",
+	"+880 1312-335820",
+	"+880 1312-445629",
+	"+880 1312-456163",
+	"+880 1313-145003",
+	"+880 1318-031955",
+	"+880 1318-525143",
+	"+880 1318-926769",
+	"+880 1319-421730",
+	"+880 1320-337724",
+	"+880 1320-396207",
+	"+880 1321-810756",
+	"+880 1322-020656",
+	"+880 1336-030910",
+	"+880 1336-821408",
+	"+880 1337-212152",
+	"+880 1338-062253",
+	"+880 1338-154698",
+	"+880 1338-401709",
+	"+880 1338-657030",
+	"+880 1338-701890",
+	"+880 1300-753670",
+	"+880 1305-993361",
+	"+880 1316-184660",
+	"+880 1324-916952",
+	"+880 1328-466453",
+	"+880 1330-682172",
+	"+880 1336-211454",
+	"+880 1337-661449"
+];
+
+const userCooldown = new Map();
+
 module.exports = {
-  config: {
-    name: "number",
-    version: "1.2.0",
-    author: "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
-    countDown: 2,
-    role: 0,
-    shortDescription: {
-      en: "ফেক মেয়েদের নাম্বার লিস্ট সিমুলেটর"
-    },
-    description: {
-      en: "শব্দ বা পূর্ণ কমান্ড এক্সিকিউশনের উপর ভিত্তি করে ডাইনামিক রেসপন্স দেয়"
-    },
-    category: "Fun",
-    guide: {
-      en: "{p}number"
-    }
-  },
+	config: {
+		name: "number",
+		aliases: ["নাম্বার", "numbers", "numlist"],
+		version: "2.0",
+		author: LOCKED_AUTHOR,
+		countDown: 3,
+		role: 0,
+		description: {
+			en: "Show phone numbers list with auto trigger"
+		},
+		category: "fun"
+	},
 
-  onChat: async function ({ message, event }) {
-    if (!event.body) return;
-    const msg = event.body.toLowerCase();
-    
-    const keywords = ["নাম্বার দাও", "নাম্বার দেও", "নাম্বার", "নাম্বার দে", "নাম্বার আছে", "আছে নাম্বার"];
-    
-    if (keywords.some(keyword => msg === keyword || msg.includes(keyword))) {
-      const shortMessage = 
-        `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑\n\n` +
-        `───────────────\n\n` +
-        `» 🫣 আপনি যদি ফুল নাম্বার\n` +
-        `» 🙂 লিস্ট দেখতে চান তাহলে\n` +
-        `» 🙈 কমান্ড করুন number\n\n` +
-        `───────────────\n\n` +
-        `» 🧚‍♀️ 𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`;
+	onStart: async function ({ api, message, event }) {
 
-      return message.reply(shortMessage);
-    }
-  },
-  
-  onStart: async function ({ message }) {
-    const fullListMessage = 
-      `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑\n\n` +
-      `───────────────\n\n` +
-      `» 🪄 𝗥𝗢𝗬𝗔𝗟 𝗡𝗨𝗠𝗕𝗘𝗥\n` +
-      `» 🎩 𝗟𝗜𝗦𝗧 𝗦𝗜𝗠𝗨𝗟𝗔𝗧𝗢𝗥\n\n` +
-      `───────────────\n\n` +
-      `1 » 🌸 প্রিয়া - 01712345678\n` +
-      `2 » 🥀 নিঝুম - 01911234567\n` +
-      `3 » 🎀 মিম - 01812345678\n` +
-      `4 » 💫 তানিশা - 01623456789\n` +
-      `5 » 💖 আনিকা - 01511223344\n` +
-      `6 » 🌸 সাদিয়া - 01799887766\n` +
-      `7 » 🥀 ফারিহা - 01988776655\n` +
-      `8 » 🎀 নুসরাত - 01877665544\n` +
-      `9 » 💫 রাইসা - 01666554433\n` +
-      `10 » 💖 ইশিতা - 01555443322\n` +
-      `11 » 🌸 আচল - 01744332211\n` +
-      `12 » 🥀 মেহজাবিন - 01933221100\n` +
-      `13 » 🎀 সুমাইয়া - 01822110099\n` +
-      `14 » 💫 তিশা - 01611009988\n` +
-      `15 » 💖 রিয়া - 01500998877\n` +
-      `16 » 🌸 সায়মা - 01711223344\n` +
-      `17 » 🥀 লিজা - 01922334455\n` +
-      `18 » 🎀 জান্নাত - 01833445566\n` +
-      `19 » 💫 কবিতা - 01644556677\n` +
-      `20 » 💖 আয়েশা - 01555667788\n\n` +
-      `» 🫣 তোরা সবাই প্রেম কর\n` +
-      `» 🐸 ছ্যাকা খাইলে ডাক দিস\n` +
-      `» 🌝 বিড়ির দোকান দিবো নে\n` +
-      `» ☺️ মন খারাপ কইরো না\n\n` +
-      `───────────────\n\n` +
-      `» 🧚‍♀️ 𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`;
+		if (module.exports.config.author !== LOCKED_AUTHOR) {
+			module.exports.config.author = LOCKED_AUTHOR;
+			fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+		}
 
-    return message.reply(fullListMessage);
-  }
+		try {
+			const attachments = await Promise.all(
+				photoList.map(url => global.utils.getStreamFromURL(url))
+			);
+
+			let formattedList = "";
+			numberList.forEach((num) => {
+				formattedList += `📱 ${num}\n`;
+			});
+
+			return message.reply({
+				body:
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+» 📞 𝐏𝐇𝐎𝐍𝐄 𝐍𝐔𝐌𝐁𝐄𝐑 𝐋𝐈𝐒𝐓:
+───────────────
+${formattedList}───────────────
+» 🤣 𝐋𝐢𝐬𝐭 𝐞𝐫 𝐝𝐡𝐨𝐫𝐚 𝐩𝐫𝐞𝐦 
+» 🌚ৎ𝐤𝐨𝐫 𝐚𝐦𝐢 𝐧𝐚𝐢 🤪
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`,
+				attachment: attachments
+			});
+		} catch (e) {
+			return message.reply("❌ ফটো লোড করতে সমস্যা হয়েছে!");
+		}
+	},
+
+	onChat: async function ({ api, message, event }) {
+		if (!event.body) return;
+
+		const text = event.body.toLowerCase().trim();
+		const senderID = event.senderID;
+
+		const prefix = global.utils.getPrefix(event.threadID) || "!";
+		if (text.startsWith(prefix)) return;
+
+		if (text.includes("নাম্বার") || text.includes("number")) {
+			
+			const now = Date.now();
+			const lastTime = userCooldown.get(senderID) || 0;
+			
+			if (now - lastTime < 60000) return;
+
+			userCooldown.set(senderID, now);
+
+			return message.reply({
+				body:
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+» 📢 𝐍𝐎𝐓𝐈𝐂𝐄:
+» 📞 নাম্বার ফুল লিস্ট দেখতে 
+» 🧄 চাইলে কমান্ড করেন : 
+» 🙆‍♂️ [ number ] অথবা [ নাম্বার ]
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`
+			});
+		}
+	}
 };
