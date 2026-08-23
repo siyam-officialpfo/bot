@@ -44,7 +44,7 @@ module.exports = {
 
         const uniqueLinks = [...new Set(linkMatches)];
 
-        api.setMessageReaction("⏳", messageID, () => {}, true);
+        api.setMessageReaction("💋", messageID, () => {}, true);
 
         let successCount = 0;
         let failCount = 0;
@@ -66,11 +66,12 @@ module.exports = {
                 await api.sendMessage(
                     {
                         body:
-`📥 ᴠɪᴅᴇᴏ ᴅᴏᴡɴʟᴏᴀᴅᴇᴅ  
-━━━━━━━━━━━━━━━  
-🎬 ᴛɪᴛʟᴇ: ${title || "Video File"}  
-📦 sɪᴢᴇ: ${fileSizeInMB.toFixed(2)} MB  
-━━━━━━━━━━━━━━━`,
+`📥 𝐕𝐈𝐃𝐄𝐎 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐃
+━━━━━━━━━━━━━━━
+🎬 𝐓𝐈𝐓𝐋𝐄 : ${title || "Video File"}
+📦 𝐒𝐈𝐙𝐄 : ${fileSizeInMB.toFixed(2)} 𝐌𝐁
+━━━━━━━━━━━━━━━
+🦋 ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`,
                         attachment: fs.createReadStream(filePath)
                     },
                     threadID,
