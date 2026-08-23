@@ -13,7 +13,7 @@ module.exports = {
 
 	onStart: async function ({ api, args, event }) {
 
-		// 🔒 AUTHOR LOCK CHECK
+		//  AUTHOR LOCK CHECK
 		if (module.exports.config.author !== "FARHAN-KHAN") {
 			return api.sendMessage(
 				"⛔ This file is locked by FARHAN-KHAN. Author change detected!",
