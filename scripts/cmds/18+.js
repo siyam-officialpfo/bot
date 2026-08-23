@@ -2,6 +2,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
 
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
+
 const imageLinks = [
  "https://i.imgur.com/B6G3NlF.jpeg",
  "https://i.imgur.com/T7RtKlp.gif",
@@ -45,14 +47,14 @@ const imageLinks = [
 ];
 
 const warningMessages = [
- "বন্ধু😭 ভালো হয়ে যা!😞",
+ "বন্ধু😭 ভালো হয়ে যা!😞",
  "ভাই এটা কী বললি🙏",
- "তোকে কি এসব শেখায় কেউ?😠 দয়া করে থাম🙏",
- "ভালো কথা বল 🙃 নয়তো ব্লক করবো🌚",
+ "তোকে কি এসব শেখায় কেউ?😠 দয়া করে থাম🙏",
+ "ভালো কথা বল 🙃 নয়তো ব্লক করবো🌚",
  "ভাই প্লিজ এসব বাদ দে😞",
- "তোকে নিয়ে মায়া লাগে রে ভাই🥺 ভদ্র হ🥲",
+ "তোকে নিয়ে মায়া লাগে রে ভাই🥺 ভদ্র হ🥲",
  "দোস্ত, এসব বলা লাগে?😐 একটু ভদ্রতা শেখ🧠",
- "তুই কি রিয়েল লাইফেও এমন?😑",
+ "তুই কি রিয়েল লাইফেও এমন?😑",
  " একটু ভদ্র হও🙏"
 ];
 
@@ -63,7 +65,7 @@ module.exports = {
  config: {
   name: "18+",
   version: "2.0",
-  author: "real author jni nh fixed by xalman",
+  author: LOCKED_AUTHOR,
   role: 1,
   description: {
    en: "Auto-detects 18+ words and sends a warning image (toggleable)"
@@ -75,6 +77,11 @@ module.exports = {
  },
 
  onStart: async function ({ message, args, globalData }) {
+  if (module.exports.config.author !== LOCKED_AUTHOR) {
+   module.exports.config.author = LOCKED_AUTHOR;
+   fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+  }
+
   const key = "anti18_enabled";
   const subCmd = args[0]?.toLowerCase();
 
@@ -97,6 +104,11 @@ module.exports = {
  },
 
  onChat: async function ({ event, message, globalData }) {
+  if (module.exports.config.author !== LOCKED_AUTHOR) {
+   module.exports.config.author = LOCKED_AUTHOR;
+   fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+  }
+
   if (globalData["anti18_enabled"] !== true) return;
 
   const badWords = [
@@ -108,7 +120,7 @@ module.exports = {
    "chodon", "gud", "gudmara", "gudmaar", "bokachoda",
    "bokachudi", "vodai", "vodar", "bal", "shawa", "heda",
    "putki", "pukki", "mara", "magi", "khanki", "bessha",
-   "চোদ", "চুদ", "চুদা", "চুদি",
+   "চোদ", "চুদা", "চুদি",
    "ভোদা", "ভোদ", "ফাক", "ধন", "বাইনচোদ", "মাল", "ভোদার",
    "সেক্স", "বাল"
   ];
