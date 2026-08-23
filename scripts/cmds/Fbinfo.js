@@ -1,54 +1,49 @@
-const AUTHOR = "UDAY HASAN SIYAM";
+const fs = require("fs-extra");
+
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
 module.exports = {
-  config: {
-    name: "fbinfo",
-    aliases: ["fb", "userinfo"],
-    version: "1.2",
-    author: AUTHOR + " (DO NOT CHANGE)",
-    role: 0,
-    shortDescription: "Facebook user info",
-    longDescription: "Get Facebook user info safely",
-    category: "info",
-    guide: "{p}fbinfo @mention | uid"
-  },
+	config: {
+		name: "fbinfo",
+		aliases: ["fb", "userinfo"],
+		version: "1.2",
+		author: LOCKED_AUTHOR,
+		role: 0,
+		shortDescription: "Facebook user info",
+		longDescription: "Get Facebook user info safely",
+		category: "info",
+		guide: "{p}fbinfo @mention | uid"
+	},
 
-  onStart: async function ({ api, event, args, message }) {
+	onStart: async function ({ api, event, args, message }) {
+		if (module.exports.config.author !== LOCKED_AUTHOR) {
+			module.exports.config.author = LOCKED_AUTHOR;
+			fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+		}
 
-    // 🔒 AUTHOR LOCK
-    if (!this.config.author.includes(AUTHOR)) {
-      return message.reply(
-        "❌ Author name changed! Command locked."
-      );
-    }
+		try {
+			let uid = event.senderID;
 
-    try {
+			if (Object.keys(event.mentions || {}).length > 0) {
+				uid = Object.keys(event.mentions)[0];
+			}
+			else if (args[0] && !isNaN(args[0])) {
+				uid = args[0];
+			}
 
-      let uid = event.senderID;
+			const data = await api.getUserInfo(uid);
+			const user = data[uid];
 
-      // Mention check
-      if (Object.keys(event.mentions || {}).length > 0) {
-        uid = Object.keys(event.mentions)[0];
-      }
+			if (!user) {
+				return message.reply("❌ User info not found");
+			}
 
-      // UID check
-      else if (args[0] && !isNaN(args[0])) {
-        uid = args[0];
-      }
+			const gender =
+				user.gender == 1 ? "Female" :
+				user.gender == 2 ? "Male" :
+				"Unknown";
 
-      const data = await api.getUserInfo(uid);
-      const user = data[uid];
-
-      if (!user) {
-        return message.reply("❌ User info not found");
-      }
-
-      const gender =
-        user.gender == 1 ? "Female" :
-        user.gender == 2 ? "Male" :
-        "Unknown";
-
-      return message.reply(
+			return message.reply(
 `📘 𝗜𝗡𝗙𝗢
 
 ╭───────────────⭓
@@ -66,19 +61,16 @@ module.exports = {
 ╰───────────────⭓
 ╭─❖
 │ 👑𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-│ 🫶 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗩𝗶𝗯𝗲☠️
+│ ━━━━━━━━━━━━━━━
+🦋 ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧
 ╰──────────────⭓`
-      );
+			);
 
-    } catch (err) {
-
-      console.log(err);
-
-      return message.reply(
-        "⚠️ Error: fbinfo command failed"
-      );
-
-    }
-
-  }
+		} catch (err) {
+			console.log(err);
+			return message.reply(
+				"⚠️ Error: fbinfo command failed"
+			);
+		}
+	}
 };
