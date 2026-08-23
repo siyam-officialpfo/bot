@@ -1,24 +1,14 @@
 const axios = require("axios");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 
-// Function to check if the author matches
-async function checkAuthor(authorName) {
-  try {
-    const response = await axios.get('https://author-check.vercel.app/name');
-    const apiAuthor = response.data.name;
-    return apiAuthor === authorName;
-  } catch (error) {
-    console.error("Error checking author:", error);
-    return false;
-  }
-}
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
 module.exports = {
   config: {
     name: "uff",
     aliases: [],
-    author: "Vex_Kshitiz", 
+    author: LOCKED_AUTHOR, 
     version: "1.0",
     cooldowns: 5,
     role: 2,
@@ -29,11 +19,9 @@ module.exports = {
   },
 
   onStart: async function ({ api, event, args, message }) {
-    
-    const isAuthorValid = await checkAuthor(module.exports.config.author);
-    if (!isAuthorValid) {
-      await message.reply("Author changer alert! This command belongs to Vex_Kshitiz.");
-      return;
+    if (module.exports.config.author !== LOCKED_AUTHOR) {
+      module.exports.config.author = LOCKED_AUTHOR;
+      fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
     }
 
     const apiUrl = "https://only-tik.vercel.app/kshitiz";
@@ -42,8 +30,12 @@ module.exports = {
       const response = await axios.get(apiUrl);
       const { videoUrl, likes } = response.data;
 
-     
-      const tempVideoPath = path.join(__dirname, "cache", `${Date.now()}.mp4`);
+      const cacheDir = path.join(__dirname, "cache");
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      const tempVideoPath = path.join(cacheDir, `${Date.now()}.mp4`);
       const writer = fs.createWriteStream(tempVideoPath);
       const videoResponse = await axios.get(videoUrl, { responseType: "stream" });
       videoResponse.data.pipe(writer);
@@ -51,10 +43,17 @@ module.exports = {
       writer.on("finish", () => {
         const stream = fs.createReadStream(tempVideoPath);
 
-        message.reply({
-          body: ``,
-          attachment: stream,
-        });
+        message.reply(
+          {
+            body: ``,
+            attachment: stream,
+          },
+          () => {
+            if (fs.existsSync(tempVideoPath)) {
+              fs.unlinkSync(tempVideoPath);
+            }
+          }
+        );
       });
 
     } catch (error) {
