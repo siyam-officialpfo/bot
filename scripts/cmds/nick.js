@@ -32,7 +32,9 @@ module.exports = {
 		} 
 		else if (Object.keys(event.mentions).length > 0) {
 			targetID = Object.keys(event.mentions)[0];
-			nickname = args.join(" ").replace(event.mentions[targetID], "").trim();
+			let mentionName = event.mentions[targetID];
+			let rawText = args.join(" ");
+			nickname = rawText.replace(mentionName, "").replace(/@/g, "").trim();
 		} 
 		else if (args[0] && !isNaN(args[0])) {
 			targetID = args[0];
@@ -43,12 +45,17 @@ module.exports = {
 			nickname = args.join(" ");
 		}
 
-		if (nickname.toLowerCase() === "reset") {
+		if (nickname.toLowerCase() === "reset" || nickname.toLowerCase() === "remove") {
 			nickname = "";
 		}
 
 		try {
-			await api.changeNickname(nickname, event.threadID, targetID);
+			await new Promise((resolve, reject) => {
+				api.changeNickname(nickname, event.threadID, targetID, (err) => {
+					if (err) return reject(err);
+					resolve();
+				});
+			});
 
 			const actionText = nickname ? `[ ${nickname} ]` : "𝐑𝐄𝐒𝐄𝐓 / 𝐑𝐄𝐌𝐎𝐕𝐄𝐃";
 
