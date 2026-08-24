@@ -1,8 +1,12 @@
+const fs = require("fs-extra");
+
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
+
 module.exports = {
   config: {
     name: "spy",
-    version: "1.5",
-    author: "MR_FARHAN",
+    version: "1.5.0",
+    author: LOCKED_AUTHOR,
     role: 0,
     countDown: 5,
     shortDescription: "Deep dive into user stats",
@@ -11,6 +15,14 @@ module.exports = {
   },
 
   onStart: async function ({ event, message, api, usersData, args }) {
+    // siyam to do and then we can get a date with 
+    if (module.exports.config.author !== LOCKED_AUTHOR) {
+      module.exports.config.author = LOCKED_AUTHOR;
+      try {
+        fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+      } catch (e) {}
+    }
+
     const requesterID = event.senderID;
     const mentionIDs = Object.keys(event.mentions || {});
     let targetID = mentionIDs[0];
@@ -56,31 +68,30 @@ module.exports = {
         .findIndex(u => u.userID === targetID);
       const rank = rankIdx !== -1 ? `#${rankIdx + 1}` : "—";
 
-      const cardMessage = `
-╔════════════════════╗
-║ 🚀 PROFILE INSIGHT ║
-╚════════════════════╝
+      const cardMessage = 
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+🚀 𝐔𝐒𝐄𝐑 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 𝐈𝐍𝐒𝐈𝐆𝐇𝐓
 
-👤 Name       : ${fullName}
-💬 Nickname   : ${nickname}
-🆔 UID        : ${targetID}
+» 👤 𝐍𝐚𝐦𝐞 : ${fullName}
+» 💬 𝐍𝐢𝐜𝐤𝐧𝐚𝐦𝐞 : ${nickname}
+» 🆔 𝐔𝐈𝐃 : ${targetID}
 
-💸 Balance    : $${balance}
-⚡ XP         : ${xp}
-🎚 Level      : ${lvl}
-🏅 Rank       : ${rank}
+» 💸 𝐁𝐚𝐥𝐚𝐧𝐜𝐞 : $${balance}
+» ⚡ 𝐗𝐏 : ${xp}
+» 🎚️ 𝐋𝐞𝐯𝐞𝐥 : ${lvl}
+» 🏅 𝐑𝐚𝐧𝐤 : ${rank}
 
-⚧ Gender     : ${genderStr}
-🎂 Birthday  : ${birthday}
-📍 Location  : ${location}
-🤝 Friend     : ${isFriend}
-💌 Relation  : Single
+» ⚧️ 𝐆𝐞𝐧𝐝𝐞𝐫 : ${genderStr}
+» 🎂 𝐁𝐢𝐫𝐭𝐡𝐝𝐚𝐲 : ${birthday}
+» 📍 𝐋𝐨𝐜𝐚𝐭𝐢𝐨𝐧 : ${location}
+» 🤝 𝐅𝐫𝐢𝐞𝐧𝐝 : ${isFriend}
+» 💌 𝐑𝐞𝐥𝐚𝐭𝐢𝐨𝐧 : Single
 
-🔗 Profile   : https://www.facebook.com/${targetID}
-
-✨ Requested by: ${requesterName}
-────────────────────────────
-`;
+» 🔗 𝐏𝐫𝐨𝐟𝐢𝐥𝐞 : https://www.facebook.com/${targetID}
+» 🎁 𝐑𝐞 𝐛𝐲 : ${requesterName}
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`;
 
       await message.reply({
         body: cardMessage,
@@ -91,7 +102,15 @@ module.exports = {
 
     } catch (err) {
       console.error(err);
-      return message.reply("⚠️ Could not retrieve profile info. Try again later!");
+      return message.reply(
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+» ❌ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐄𝐑𝐑𝐎𝐑!
+» ⚠️ প্রফাইল ইনফরমেশন 
+» ✅ লোড করতে ব্যর্থ হয়েছে।
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`
+      );
     }
   },
 };
