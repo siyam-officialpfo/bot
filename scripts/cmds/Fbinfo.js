@@ -3,74 +3,76 @@ const fs = require("fs-extra");
 const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
 module.exports = {
-	config: {
-		name: "fbinfo",
-		aliases: ["fb", "userinfo"],
-		version: "1.2",
-		author: LOCKED_AUTHOR,
-		role: 0,
-		shortDescription: "Facebook user info",
-		longDescription: "Get Facebook user info safely",
-		category: "info",
-		guide: "{p}fbinfo @mention | uid"
-	},
+  config: {
+    name: "fbinfo",
+    aliases: ["fb", "ইনফো", "uidinfo"],
+    version: "5.0.0",
+    author: LOCKED_AUTHOR,
+    countDown: 2,
+    role: 0,
+    shortDescription: "Get official text-based Facebook user info",
+    longDescription: "Fetch official Facebook user profile details fast without images",
+    category: "utility",
+    guide: "{p}userinfo [@mention / reply to message / UID]"
+  },
 
-	onStart: async function ({ api, event, args, message }) {
-		if (module.exports.config.author !== LOCKED_AUTHOR) {
-			module.exports.config.author = LOCKED_AUTHOR;
-			fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
-		}
+  onStart: async function ({ api, message, event, args, usersData }) {
+    // Author Security Lock
+    if (module.exports.config.author !== LOCKED_AUTHOR) {
+      module.exports.config.author = LOCKED_AUTHOR;
+      try {
+        fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
+      } catch (e) {}
+    }
 
-		try {
-			let uid = event.senderID;
+    let targetID;
+    if (event.type === "message_reply") {
+      targetID = event.messageReply.senderID;
+    } else if (event.mentions && Object.keys(event.mentions).length > 0) {
+      targetID = Object.keys(event.mentions)[0];
+    } else if (args[0] && !isNaN(args[0])) {
+      targetID = args[0];
+    } else {
+      targetID = event.senderID;
+    }
 
-			if (Object.keys(event.mentions || {}).length > 0) {
-				uid = Object.keys(event.mentions)[0];
-			}
-			else if (args[0] && !isNaN(args[0])) {
-				uid = args[0];
-			}
+    try {
+      const infoRes = await api.getUserInfo(targetID);
+      const userInfo = (infoRes && infoRes[targetID]) ? infoRes[targetID] : {};
 
-			const data = await api.getUserInfo(uid);
-			const user = data[uid];
+      const name = userInfo.name || (await usersData.getName(targetID)) || "Facebook User";
+      const genderNum = userInfo.gender;
+      const gender = genderNum === 2 ? "𝐌𝐀𝐋𝐄 পুরুষ" : genderNum === 1 ? "𝐅𝐄𝐌𝐀𝐋𝐄 নারী" : "Private / Hidden";
+      const username = userInfo.vanity ? `@${userInfo.vanity}` : "নেই";
+      const isFriend = userInfo.isFriend ? "হ্যাঁ বটের ফ্রেন্ড" : "ফ্রেন্ড না";
+      const profileUrl = userInfo.profileUrl || `https://www.facebook.com/profile.php?id=${targetID}`;
+      const isBirthdayToday = userInfo.isBirthday ? "আজকে জন্মদিন 🎉" : "জন্মদিন নয়";
 
-			if (!user) {
-				return message.reply("❌ User info not found");
-			}
+      return message.reply(
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+👤 𝐔𝐒𝐄𝐑 𝐏𝐑𝐎𝐅𝐈𝐋𝐄 𝐈𝐍𝐅𝐎
 
-			const gender =
-				user.gender == 1 ? "Female" :
-				user.gender == 2 ? "Male" :
-				"Unknown";
-
-			return message.reply(
-`📘 𝗜𝗡𝗙𝗢
-
-╭───────────────⭓
-│ 👤 𝗡𝗮𝗺𝗲
-│ ${user.name || "Unknown"}
-│ 🆔 𝗨𝗜𝗗
-│ ${uid}
-│ 🌐 𝗨𝘀𝗲𝗿𝗻𝗮𝗺𝗲
-│ ${user.vanity || "Not set"}
-│ 🚻 𝗚𝗲𝗻𝗱𝗲𝗿
-│ ${gender}
-│ 🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲
-│ https://facebook.com/${uid}
-
-╰───────────────⭓
-╭─❖
-│ 👑𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-│ ━━━━━━━━━━━━━━━
-🦋 ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧
-╰──────────────⭓`
-			);
-
-		} catch (err) {
-			console.log(err);
-			return message.reply(
-				"⚠️ Error: fbinfo command failed"
-			);
-		}
-	}
+» 📛 𝐍𝐚𝐦𝐞 : ${name}
+» 🆔 𝐔𝐈𝐃 : ${targetID}
+» 🏷️ 𝐔𝐬𝐞𝐫𝐧𝐚𝐦𝐞 : ${username}
+» 👤 𝐆𝐞𝐧𝐝𝐞𝐫 : ${gender}
+» 🤝 𝐅𝐫𝐢𝐞𝐧𝐝 : ${isFriend}
+» 🎂 𝐁𝐢𝐫𝐭𝐡𝐝𝐚𝐲 : ${isBirthdayToday}
+» 🔗 𝐏𝐫𝐨𝐟𝐢𝐥𝐞 : ${profileUrl}
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`
+      );
+    } catch (err) {
+      return message.reply(
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+» ❌ 𝐒𝐘𝐒𝐓𝐄𝐌 𝐄𝐑𝐑𝐎𝐑!
+» ⚠️ ফেসবুক থেকে ইউজার 
+» 🤔 ইনফরমেশন লোড করা জাইনি।
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`
+      );
+    }
+  }
 };
