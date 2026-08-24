@@ -40,7 +40,7 @@ module.exports = {
       return message.reply(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-»ৎ📖 𝐕𝐎𝐈𝐂𝐄 𝐆𝐔𝐈𝐃𝐄𝐋𝐈𝐍𝐄 :
+» 📖 𝐕𝐎𝐈𝐂𝐄 𝐆𝐔𝐈𝐃𝐄𝐋𝐈𝐍𝐄 :
 » 🤩 say যেকোনো লেখা
 » 🌚 say en English Text
 » ✅ ইংরেজিতে কথা 
