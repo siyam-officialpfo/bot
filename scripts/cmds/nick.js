@@ -25,24 +25,43 @@ module.exports = {
 
 		let targetID;
 		let nickname = "";
+		let fullText = args.join(" ");
 
 		if (event.type === "message_reply") {
 			targetID = event.messageReply.senderID;
-			nickname = args.join(" ");
+			if (fullText.includes("-")) {
+				nickname = fullText.split("-").slice(1).join("-").trim();
+			} else {
+				nickname = fullText;
+			}
 		} 
 		else if (Object.keys(event.mentions).length > 0) {
 			targetID = Object.keys(event.mentions)[0];
-			let mentionName = event.mentions[targetID];
-			let rawText = args.join(" ");
-			nickname = rawText.replace(mentionName, "").replace(/@/g, "").trim();
+			if (fullText.includes("-")) {
+				nickname = fullText.split("-").slice(1).join("-").trim();
+			} else {
+				let mentionName = event.mentions[targetID];
+				let cleanName = mentionName.replace(/@/g, "").trim();
+				let escapedName = cleanName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+				nickname = fullText.replace(new RegExp(escapedName, "gi"), "").replace(/@/g, "").replace(/\s+/g, " ").trim();
+			}
 		} 
 		else if (args[0] && !isNaN(args[0])) {
 			targetID = args[0];
-			nickname = args.slice(1).join(" ");
+			let textWithoutID = args.slice(1).join(" ");
+			if (textWithoutID.includes("-")) {
+				nickname = textWithoutID.split("-").slice(1).join("-").trim();
+			} else {
+				nickname = textWithoutID;
+			}
 		} 
 		else {
 			targetID = event.senderID;
-			nickname = args.join(" ");
+			if (fullText.includes("-")) {
+				nickname = fullText.split("-").slice(1).join("-").trim();
+			} else {
+				nickname = fullText;
+			}
 		}
 
 		if (nickname.toLowerCase() === "reset" || nickname.toLowerCase() === "remove") {
