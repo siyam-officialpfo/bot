@@ -25,14 +25,14 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
 
 module.exports = {
 	config: {
-		name: "up4",
-		aliases: ["uptc4", "cardupt4", "uptimecard4", "halftime4"],
-		version: "2.0",
+		name: "uptcard",
+		aliases: ["uptc", "cardupt", "uptimecard", "halftime"],
+		version: "2.5",
 		author: LOCKED_AUTHOR,
 		countDown: 5,
 		role: 0,
 		description: {
-			en: "Generate automated Dark Glassmorphism Half-Time Bot Uptime Dashboard Card"
+			en: "Generate automated HD Dark Glassmorphism Half-Time Bot Uptime Dashboard Card"
 		},
 		category: "system"
 	},
@@ -74,6 +74,7 @@ module.exports = {
 			const canvas = createCanvas(width, height);
 			const ctx = canvas.getContext("2d");
 
+			// Background Gradient
 			const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 100, width / 2, height / 2, 1200);
 			bgGrad.addColorStop(0, "#0e1329");
 			bgGrad.addColorStop(0.5, "#080a18");
@@ -81,89 +82,94 @@ module.exports = {
 			ctx.fillStyle = bgGrad;
 			ctx.fillRect(0, 0, width, height);
 
+			// Background Glowing Particles
 			ctx.save();
-			for (let i = 0; i < 70; i++) {
+			for (let i = 0; i < 80; i++) {
 				const px = (Math.sin(i * 99) * 0.5 + 0.5) * width;
 				const py = (Math.cos(i * 33) * 0.5 + 0.5) * height;
-				const pr = (i % 3) + 1;
-				ctx.fillStyle = i % 2 === 0 ? "rgba(0, 210, 255, 0.15)" : "rgba(157, 78, 221, 0.15)";
+				const pr = (i % 3) + 2;
+				ctx.fillStyle = i % 2 === 0 ? "rgba(0, 210, 255, 0.25)" : "rgba(157, 78, 221, 0.25)";
 				ctx.beginPath();
 				ctx.arc(px, py, pr, 0, Math.PI * 2);
 				ctx.fill();
 			}
 			ctx.restore();
 
+			// Outer Border
 			ctx.save();
-			drawRoundRect(ctx, 40, 40, width - 80, height - 80, 24);
-			ctx.strokeStyle = "rgba(0, 210, 255, 0.25)";
-			ctx.lineWidth = 2;
+			drawRoundRect(ctx, 35, 35, width - 70, height - 70, 28);
+			ctx.strokeStyle = "rgba(0, 210, 255, 0.35)";
+			ctx.lineWidth = 3;
 			ctx.stroke();
 			ctx.restore();
 
+			// --- HEADER BAR ---
 			ctx.save();
-			ctx.fillStyle = "rgba(11, 16, 38, 0.75)";
-			drawRoundRect(ctx, 60, 60, width - 120, 100, 16);
+			ctx.fillStyle = "rgba(11, 16, 38, 0.85)";
+			drawRoundRect(ctx, 55, 50, width - 110, 115, 20);
 			ctx.fill();
-			ctx.strokeStyle = "rgba(0, 210, 255, 0.35)";
-			ctx.lineWidth = 1.5;
+			ctx.strokeStyle = "rgba(0, 210, 255, 0.45)";
+			ctx.lineWidth = 2.5;
 			ctx.stroke();
 
-			ctx.font = "bold 34px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 42px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ffffff";
 			ctx.shadowColor = "#00d2ff";
-			ctx.shadowBlur = 15;
-			ctx.fillText("👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑", 90, 112);
+			ctx.shadowBlur = 20;
+			ctx.fillText("👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑", 85, 108);
 
 			ctx.shadowBlur = 0;
-			ctx.font = "bold 16px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 20px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ff9e00";
-			ctx.fillText("BOT HALF TIME • LIVE SYSTEM STATUS", 90, 138);
+			ctx.fillText("BOT HALF TIME • LIVE SYSTEM STATUS", 85, 142);
 
+			// Header Live Badge & Time
 			ctx.save();
-			ctx.fillStyle = "rgba(0, 255, 136, 0.15)";
-			drawRoundRect(ctx, width - 460, 80, 110, 36, 18);
+			ctx.fillStyle = "rgba(0, 255, 136, 0.2)";
+			drawRoundRect(ctx, width - 520, 72, 125, 42, 21);
 			ctx.fill();
 			ctx.strokeStyle = "#00ff88";
-			ctx.lineWidth = 1;
+			ctx.lineWidth = 1.5;
 			ctx.stroke();
 
 			ctx.fillStyle = "#00ff88";
 			ctx.shadowColor = "#00ff88";
-			ctx.shadowBlur = 8;
+			ctx.shadowBlur = 12;
 			ctx.beginPath();
-			ctx.arc(width - 440, 98, 5, 0, Math.PI * 2);
+			ctx.arc(width - 495, 93, 7, 0, Math.PI * 2);
 			ctx.fill();
 
 			ctx.shadowBlur = 0;
-			ctx.font = "bold 14px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#00ff88";
-			ctx.fillText("LIVE", width - 425, 103);
+			ctx.fillText("LIVE", width - 478, 99);
 
-			ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 34px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ffd700";
 			ctx.shadowColor = "#ffd700";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 15;
 			ctx.textAlign = "right";
-			ctx.fillText(timeStr, width - 90, 103);
+			ctx.fillText(timeStr, width - 85, 100);
 
 			ctx.shadowBlur = 0;
-			ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
-			ctx.fillStyle = "#909ad0";
-			ctx.fillText(`${dateStr}  •  ${dayStr}`, width - 90, 132);
+			ctx.font = "bold 16px 'Segoe UI', Arial, sans-serif";
+			ctx.fillStyle = "#a2acde";
+			ctx.fillText(`${dateStr}  •  ${dayStr}`, width - 85, 136);
 			ctx.restore();
 
+			// --- CENTER CIRCLE DASHBOARD ---
 			const centerX = width / 2;
-			const centerY = 520;
-			const radius = 220;
+			const centerY = 525;
+			const radius = 230;
 
 			ctx.save();
 			ctx.beginPath();
-			ctx.arc(centerX, centerY, radius + 25, 0, Math.PI * 2);
-			ctx.fillStyle = "rgba(0, 210, 255, 0.03)";
+			ctx.arc(centerX, centerY, radius + 30, 0, Math.PI * 2);
+			ctx.fillStyle = "rgba(0, 210, 255, 0.04)";
 			ctx.fill();
 
-			ctx.lineWidth = 18;
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+			ctx.lineWidth = 22;
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
 			ctx.beginPath();
 			ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
 			ctx.stroke();
@@ -175,47 +181,48 @@ module.exports = {
 			ringGrad.addColorStop(1, "#ffd700");
 
 			ctx.shadowColor = "#00d2ff";
-			ctx.shadowBlur = 25;
+			ctx.shadowBlur = 30;
 			ctx.strokeStyle = ringGrad;
-			ctx.lineWidth = 16;
+			ctx.lineWidth = 20;
 			ctx.lineCap = "round";
 			ctx.beginPath();
 			ctx.arc(centerX, centerY, radius, -Math.PI * 0.75, Math.PI * 1.15);
 			ctx.stroke();
 
 			ctx.shadowBlur = 0;
-			ctx.fillStyle = "rgba(8, 11, 26, 0.85)";
+			ctx.fillStyle = "rgba(8, 11, 26, 0.9)";
 			ctx.beginPath();
-			ctx.arc(centerX, centerY, radius - 15, 0, Math.PI * 2);
+			ctx.arc(centerX, centerY, radius - 16, 0, Math.PI * 2);
 			ctx.fill();
-			ctx.strokeStyle = "rgba(0, 210, 255, 0.3)";
-			ctx.lineWidth = 2;
+			ctx.strokeStyle = "rgba(0, 210, 255, 0.4)";
+			ctx.lineWidth = 2.5;
 			ctx.stroke();
 
 			ctx.textAlign = "center";
-			ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#00d2ff";
 			ctx.shadowColor = "#00d2ff";
-			ctx.shadowBlur = 8;
-			ctx.fillText("BOT IS RUNNING", centerX, centerY - 100);
+			ctx.shadowBlur = 12;
+			ctx.fillText("BOT IS RUNNING", centerX, centerY - 105);
 
-			ctx.font = "bold 32px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 42px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ffd700";
 			ctx.shadowColor = "#ffd700";
-			ctx.shadowBlur = 15;
-			ctx.fillText("HALF TIME", centerX, centerY - 55);
+			ctx.shadowBlur = 20;
+			ctx.fillText("HALF TIME", centerX, centerY - 52);
 
 			ctx.shadowBlur = 0;
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-			ctx.lineWidth = 1;
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+			ctx.lineWidth = 1.5;
 			ctx.beginPath();
-			ctx.moveTo(centerX - 120, centerY - 35);
-			ctx.lineTo(centerX + 120, centerY - 35);
+			ctx.moveTo(centerX - 140, centerY - 32);
+			ctx.lineTo(centerX + 140, centerY - 32);
 			ctx.stroke();
 
-			const boxW = 85;
-			const boxH = 65;
-			const gap = 12;
+			// Time Boxes Inside Center Circle
+			const boxW = 95;
+			const boxH = 75;
+			const gap = 14;
 			const totalW = (boxW * 4) + (gap * 3);
 			const startX = centerX - (totalW / 2);
 			const boxY = centerY - 10;
@@ -230,61 +237,63 @@ module.exports = {
 			timeBoxes.forEach((tb, i) => {
 				const bx = startX + i * (boxW + gap);
 				ctx.save();
-				ctx.fillStyle = "rgba(18, 24, 48, 0.9)";
-				drawRoundRect(ctx, bx, boxY, boxW, boxH, 10);
+				ctx.fillStyle = "rgba(18, 24, 48, 0.95)";
+				drawRoundRect(ctx, bx, boxY, boxW, boxH, 12);
 				ctx.fill();
 				ctx.strokeStyle = tb.color;
-				ctx.lineWidth = 1.5;
+				ctx.lineWidth = 2;
 				ctx.stroke();
 
-				ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
+				ctx.font = "bold 30px 'Segoe UI', Arial, sans-serif";
 				ctx.fillStyle = "#ffffff";
 				ctx.shadowColor = tb.color;
-				ctx.shadowBlur = 8;
+				ctx.shadowBlur = 12;
 				ctx.textAlign = "center";
-				ctx.fillText(tb.val, bx + (boxW / 2), boxY + 36);
+				ctx.fillText(tb.val, bx + (boxW / 2), boxY + 42);
 
 				ctx.shadowBlur = 0;
-				ctx.font = "bold 10px 'Segoe UI', Arial, sans-serif";
+				ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
 				ctx.fillStyle = tb.color;
-				ctx.fillText(tb.label, bx + (boxW / 2), boxY + 54);
+				ctx.fillText(tb.label, bx + (boxW / 2), boxY + 63);
 				ctx.restore();
 			});
 
 			ctx.save();
-			ctx.fillStyle = "rgba(0, 255, 136, 0.15)";
-			drawRoundRect(ctx, centerX - 80, centerY + 125, 160, 32, 16);
+			ctx.fillStyle = "rgba(0, 255, 136, 0.2)";
+			drawRoundRect(ctx, centerX - 100, centerY + 130, 200, 38, 19);
 			ctx.fill();
 			ctx.strokeStyle = "#00ff88";
-			ctx.lineWidth = 1;
-			ctx.stroke();
-
-			ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
-			ctx.fillStyle = "#00ff88";
-			ctx.textAlign = "center";
-			ctx.fillText("● SYSTEM ONLINE", centerX, centerY + 146);
-			ctx.restore();
-
-			ctx.save();
-			drawRoundRect(ctx, 60, 180, 500, 370, 16);
-			ctx.fillStyle = "rgba(10, 15, 33, 0.75)";
-			ctx.fill();
-			ctx.strokeStyle = "rgba(0, 210, 255, 0.3)";
 			ctx.lineWidth = 1.5;
 			ctx.stroke();
 
-			ctx.font = "bold 20px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 16px 'Segoe UI', Arial, sans-serif";
+			ctx.fillStyle = "#00ff88";
+			ctx.textAlign = "center";
+			ctx.fillText("● SYSTEM ONLINE", centerX, centerY + 155);
+			ctx.restore();
+
+			// --- TOP LEFT PANEL: BOT INFORMATION ---
+			ctx.save();
+			drawRoundRect(ctx, 55, 185, 520, 365, 18);
+			ctx.fillStyle = "rgba(10, 15, 33, 0.85)";
+			ctx.fill();
+			ctx.strokeStyle = "rgba(0, 210, 255, 0.4)";
+			ctx.lineWidth = 2;
+			ctx.stroke();
+
+			ctx.font = "bold 25px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#00d2ff";
 			ctx.shadowColor = "#00d2ff";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 14;
 			ctx.textAlign = "left";
-			ctx.fillText("🤖 BOT INFORMATION", 90, 222);
+			ctx.fillText("🤖 BOT INFORMATION", 85, 228);
 			ctx.shadowBlur = 0;
 
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+			ctx.lineWidth = 1.5;
 			ctx.beginPath();
-			ctx.moveTo(90, 240);
-			ctx.lineTo(530, 240);
+			ctx.moveTo(85, 246);
+			ctx.lineTo(545, 246);
 			ctx.stroke();
 
 			const botInfo = [
@@ -297,48 +306,50 @@ module.exports = {
 				{ label: "Last Restart", val: "STABLE (0 ERR)" }
 			];
 
-			let infoY = 275;
+			let infoY = 282;
 			botInfo.forEach((info) => {
-				ctx.font = "15px 'Segoe UI', Arial, sans-serif";
-				ctx.fillStyle = "#909ad0";
-				ctx.fillText(info.label, 90, infoY);
+				ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
+				ctx.fillStyle = "#a2acde";
+				ctx.fillText(info.label, 85, infoY);
 
 				if (info.isOnline) {
 					ctx.fillStyle = "#00ff88";
-					ctx.font = "bold 15px 'Segoe UI', Arial, sans-serif";
+					ctx.font = "bold 19px 'Segoe UI', Arial, sans-serif";
 					ctx.shadowColor = "#00ff88";
-					ctx.shadowBlur = 8;
-					ctx.fillText("● " + info.val, 380, infoY);
+					ctx.shadowBlur = 10;
+					ctx.fillText("● " + info.val, 340, infoY);
 					ctx.shadowBlur = 0;
 				} else {
 					ctx.fillStyle = "#ffffff";
-					ctx.font = "bold 15px 'Segoe UI', Arial, sans-serif";
-					ctx.fillText(info.val, 380, infoY);
+					ctx.font = "bold 19px 'Segoe UI', Arial, sans-serif";
+					ctx.fillText(info.val, 340, infoY);
 				}
-				infoY += 38;
+				infoY += 37;
 			});
 			ctx.restore();
 
+			// --- BOTTOM LEFT PANEL: SYSTEM PERFORMANCE ---
 			ctx.save();
-			drawRoundRect(ctx, 60, 570, 500, 370, 16);
-			ctx.fillStyle = "rgba(10, 15, 33, 0.75)";
+			drawRoundRect(ctx, 55, 570, 520, 365, 18);
+			ctx.fillStyle = "rgba(10, 15, 33, 0.85)";
 			ctx.fill();
-			ctx.strokeStyle = "rgba(157, 78, 221, 0.35)";
-			ctx.lineWidth = 1.5;
+			ctx.strokeStyle = "rgba(157, 78, 221, 0.45)";
+			ctx.lineWidth = 2;
 			ctx.stroke();
 
-			ctx.font = "bold 20px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 25px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#9d4edd";
 			ctx.shadowColor = "#9d4edd";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 14;
 			ctx.textAlign = "left";
-			ctx.fillText("⚡ SYSTEM PERFORMANCE", 90, 612);
+			ctx.fillText("⚡ SYSTEM PERFORMANCE", 85, 613);
 			ctx.shadowBlur = 0;
 
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+			ctx.lineWidth = 1.5;
 			ctx.beginPath();
-			ctx.moveTo(90, 630);
-			ctx.lineTo(530, 630);
+			ctx.moveTo(85, 631);
+			ctx.lineTo(545, 631);
 			ctx.stroke();
 
 			const perfItems = [
@@ -349,54 +360,56 @@ module.exports = {
 				{ label: "Database Status", val: "CONNECTED", pct: 100, color: "#ffd700" }
 			];
 
-			let perfY = 665;
+			let perfY = 668;
 			perfItems.forEach((item) => {
-				ctx.font = "15px 'Segoe UI', Arial, sans-serif";
-				ctx.fillStyle = "#909ad0";
-				ctx.fillText(item.label, 90, perfY);
+				ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
+				ctx.fillStyle = "#a2acde";
+				ctx.fillText(item.label, 85, perfY);
 
-				ctx.font = "bold 14px 'Segoe UI', Arial, sans-serif";
+				ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
 				ctx.fillStyle = item.color;
 				ctx.textAlign = "right";
-				ctx.fillText(item.val, 530, perfY);
+				ctx.fillText(item.val, 545, perfY);
 				ctx.textAlign = "left";
 
-				ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-				drawRoundRect(ctx, 90, perfY + 8, 440, 8, 4);
+				ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+				drawRoundRect(ctx, 85, perfY + 8, 460, 11, 5);
 				ctx.fill();
 
-				const barWidth = Math.max(12, (440 * item.pct) / 100);
+				const barWidth = Math.max(16, (460 * item.pct) / 100);
 				ctx.fillStyle = item.color;
 				ctx.shadowColor = item.color;
-				ctx.shadowBlur = 6;
-				drawRoundRect(ctx, 90, perfY + 8, barWidth, 8, 4);
+				ctx.shadowBlur = 8;
+				drawRoundRect(ctx, 85, perfY + 8, barWidth, 11, 5);
 				ctx.fill();
 				ctx.shadowBlur = 0;
 
-				perfY += 52;
+				perfY += 51;
 			});
 			ctx.restore();
 
+			// --- TOP RIGHT PANEL: LIVE STATISTICS ---
 			ctx.save();
-			drawRoundRect(ctx, 1360, 180, 500, 370, 16);
-			ctx.fillStyle = "rgba(10, 15, 33, 0.75)";
+			drawRoundRect(ctx, 1345, 185, 520, 365, 18);
+			ctx.fillStyle = "rgba(10, 15, 33, 0.85)";
 			ctx.fill();
-			ctx.strokeStyle = "rgba(255, 123, 0, 0.35)";
-			ctx.lineWidth = 1.5;
+			ctx.strokeStyle = "rgba(255, 123, 0, 0.45)";
+			ctx.lineWidth = 2;
 			ctx.stroke();
 
-			ctx.font = "bold 20px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 25px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ff7b00";
 			ctx.shadowColor = "#ff7b00";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 14;
 			ctx.textAlign = "left";
-			ctx.fillText("📊 LIVE STATISTICS", 1390, 222);
+			ctx.fillText("📊 LIVE STATISTICS", 1375, 228);
 			ctx.shadowBlur = 0;
 
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+			ctx.lineWidth = 1.5;
 			ctx.beginPath();
-			ctx.moveTo(1390, 240);
-			ctx.lineTo(1830, 240);
+			ctx.moveTo(1375, 246);
+			ctx.lineTo(1835, 246);
 			ctx.stroke();
 
 			const statsGrid = [
@@ -411,48 +424,50 @@ module.exports = {
 			statsGrid.forEach((st, idx) => {
 				const col = idx % 2;
 				const row = Math.floor(idx / 2);
-				const sx = 1390 + col * 225;
-				const sy = 260 + row * 90;
+				const sx = 1375 + col * 235;
+				const sy = 262 + row * 88;
 
-				ctx.fillStyle = "rgba(18, 24, 48, 0.6)";
-				drawRoundRect(ctx, sx, sy, 210, 75, 10);
+				ctx.fillStyle = "rgba(18, 24, 48, 0.8)";
+				drawRoundRect(ctx, sx, sy, 220, 76, 12);
 				ctx.fill();
-				ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+				ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
 				ctx.stroke();
 
-				ctx.font = "13px 'Segoe UI', Arial, sans-serif";
-				ctx.fillStyle = "#909ad0";
-				ctx.fillText(st.label, sx + 15, sy + 26);
+				ctx.font = "bold 15px 'Segoe UI', Arial, sans-serif";
+				ctx.fillStyle = "#a2acde";
+				ctx.fillText(st.label, sx + 16, sy + 28);
 
-				ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
+				ctx.font = "bold 26px 'Segoe UI', Arial, sans-serif";
 				ctx.fillStyle = st.color;
 				ctx.shadowColor = st.color;
-				ctx.shadowBlur = 8;
-				ctx.fillText(st.val, sx + 15, sy + 58);
+				ctx.shadowBlur = 10;
+				ctx.fillText(st.val, sx + 16, sy + 60);
 				ctx.shadowBlur = 0;
 			});
 			ctx.restore();
 
+			// --- BOTTOM RIGHT PANEL: LIVE ACTIVITY LOG ---
 			ctx.save();
-			drawRoundRect(ctx, 1360, 570, 500, 370, 16);
-			ctx.fillStyle = "rgba(10, 15, 33, 0.75)";
+			drawRoundRect(ctx, 1345, 570, 520, 365, 18);
+			ctx.fillStyle = "rgba(10, 15, 33, 0.85)";
 			ctx.fill();
-			ctx.strokeStyle = "rgba(255, 215, 0, 0.35)";
-			ctx.lineWidth = 1.5;
+			ctx.strokeStyle = "rgba(255, 215, 0, 0.45)";
+			ctx.lineWidth = 2;
 			ctx.stroke();
 
-			ctx.font = "bold 20px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 25px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ffd700";
 			ctx.shadowColor = "#ffd700";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 14;
 			ctx.textAlign = "left";
-			ctx.fillText("📡 LIVE ACTIVITY LOG", 1390, 612);
+			ctx.fillText("📡 LIVE ACTIVITY LOG", 1375, 613);
 			ctx.shadowBlur = 0;
 
-			ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+			ctx.lineWidth = 1.5;
 			ctx.beginPath();
-			ctx.moveTo(1390, 630);
-			ctx.lineTo(1830, 630);
+			ctx.moveTo(1375, 631);
+			ctx.lineTo(1835, 631);
 			ctx.stroke();
 
 			const activities = [
@@ -463,42 +478,43 @@ module.exports = {
 				{ text: "Half Time System Running", time: "ONLINE", color: "#ffd700" }
 			];
 
-			let actY = 675;
+			let actY = 673;
 			activities.forEach((act) => {
 				ctx.fillStyle = act.color;
 				ctx.shadowColor = act.color;
-				ctx.shadowBlur = 8;
+				ctx.shadowBlur = 10;
 				ctx.beginPath();
-				ctx.arc(1405, actY - 5, 5, 0, Math.PI * 2);
+				ctx.arc(1390, actY - 6, 6, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.shadowBlur = 0;
 
-				ctx.font = "15px 'Segoe UI', Arial, sans-serif";
-				ctx.fillStyle = "#e0e5ff";
-				ctx.fillText(act.text, 1425, actY);
+				ctx.font = "bold 18px 'Segoe UI', Arial, sans-serif";
+				ctx.fillStyle = "#ffffff";
+				ctx.fillText(act.text, 1412, actY);
 
-				ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
+				ctx.font = "bold 15px 'Segoe UI', Arial, sans-serif";
 				ctx.fillStyle = act.color;
 				ctx.textAlign = "right";
-				ctx.fillText(act.time, 1830, actY);
+				ctx.fillText(act.time, 1835, actY);
 				ctx.textAlign = "left";
 
-				actY += 52;
+				actY += 51;
 			});
 			ctx.restore();
 
+			// --- FOOTER BAR ---
 			ctx.save();
-			ctx.fillStyle = "rgba(8, 11, 24, 0.85)";
-			drawRoundRect(ctx, 60, 960, width - 120, 60, 14);
+			ctx.fillStyle = "rgba(8, 11, 24, 0.9)";
+			drawRoundRect(ctx, 55, 955, width - 110, 65, 16);
 			ctx.fill();
-			ctx.strokeStyle = "rgba(0, 210, 255, 0.2)";
-			ctx.lineWidth = 1;
+			ctx.strokeStyle = "rgba(0, 210, 255, 0.35)";
+			ctx.lineWidth = 1.5;
 			ctx.stroke();
 
-			ctx.font = "bold 17px 'Segoe UI', Arial, sans-serif";
+			ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
 			ctx.fillStyle = "#ffffff";
 			ctx.shadowColor = "#00d2ff";
-			ctx.shadowBlur = 10;
+			ctx.shadowBlur = 12;
 			ctx.textAlign = "center";
 			ctx.fillText("👑 SIYAM-HASAN CHAT BOT  ⚡  LIGHTING SYSTEM • LIVE MONITOR 👑", width / 2, 996);
 			ctx.restore();
