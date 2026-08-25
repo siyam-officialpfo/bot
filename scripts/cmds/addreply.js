@@ -33,8 +33,8 @@ let customWords = loadData();
 module.exports = {
 	config: {
 		name: "addreply",
-		aliases: ["ar", "কথা", "reply",  "add", "টিচ"],
-		version: "2.5",
+		aliases: ["ar", "কথা", "reply", "add", "টিচ"],
+		version: "2.8",
 		author: LOCKED_AUTHOR,
 		countDown: 3,
 		role: 0,
@@ -43,7 +43,7 @@ module.exports = {
 		},
 		category: "tool",
 		guide: {
-			bn: "addreply add <keyword> <reply>\naddreply del <keyword>\naddreply list\naddreply clear"
+			bn: "addreply add <keyword> - <reply>\naddreply del <keyword>\naddreply list\naddreply clear"
 		}
 	},
 
@@ -53,24 +53,10 @@ module.exports = {
 		}
 
 		const action = args[0]?.toLowerCase();
-		const key = args[1]?.toLowerCase();
-		const reply = args.slice(2).join(" ");
 
-		if (action === "add" && key && reply) {
-			customWords[key] = reply;
-			saveData(customWords);
-			return api.sendMessage(
-`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-───────────────
-» 🗣️ 𝐀𝐔𝐓𝐎 𝐑𝐄𝐏𝐋𝐘 𝐀𝐃𝐃𝐄𝐃
-» 📌 𝐊𝐞𝐲𝐰𝐨𝐫𝐝: ${key}
-» 💬 𝐑𝐞𝐩𝐥𝐲: ${reply}
-───────────────
-» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, event.threadID, event.messageID);
-		}
-
-		if (action === "del" && key) {
-			if (customWords[key]) {
+		if (action === "del") {
+			const key = args.slice(1).join(" ").toLowerCase().trim();
+			if (key && customWords[key]) {
 				delete customWords[key];
 				saveData(customWords);
 				return api.sendMessage(
@@ -121,21 +107,50 @@ module.exports = {
 			return api.sendMessage(listMsg, event.threadID, event.messageID);
 		}
 
+		let fullInput = args.join(" ");
+		if (action === "add") {
+			fullInput = args.slice(1).join(" ");
+		}
+
+		if (fullInput.includes("-")) {
+			const splitIndex = fullInput.indexOf("-");
+			const key = fullInput.substring(0, splitIndex).trim().toLowerCase();
+			const reply = fullInput.substring(splitIndex + 1).trim();
+
+			if (key && reply) {
+				customWords[key] = reply;
+				saveData(customWords);
+				return api.sendMessage(
+`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+───────────────
+» 🗣️ 𝐀𝐔𝐓𝐎 𝐑𝐄𝐏𝐋𝐘 𝐀𝐃𝐃𝐄𝐃
+» 📌 𝐊𝐞𝐲𝐰𝐨𝐫𝐝: ${key}
+» 💬 𝐑𝐞𝐩𝐥𝐲: ${reply}
+───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, event.threadID, event.messageID);
+			}
+		}
+
 		return api.sendMessage(
 `👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ━━━━━━━━━━━━━━
 📌 𝐀𝐃𝐃𝐑𝐄𝐏𝐋𝐘 𝐆𝐔𝐈𝐃𝐄
-» 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐚𝐝𝐝
+
+» 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐚𝐝𝐝 <শব্দ> - <উত্তর>
 ➜ নতুন অটো রিপ্লাই যোগ হবে।
-» 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐝𝐞𝐥 ট্যাক্স
+
+» 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐝𝐞𝐥 <শব্দ>
 ➜ নির্দিষ্ট অটো রিপ্লাই ডিলিট হবে।
+
 » 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐥𝐢𝐬𝐭
-➜ সব অটো রিপ্লাইয়ের তালিকা দেখা যাবে।
+➜ সব অটো রিপ্লাইয়ের তালিকা দেখাবে।
+
 » 𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐜𝐥𝐞𝐚𝐫
 ➜ সব অটো রিপ্লাই একসাথে ডিলিট হবে।
+
 💡 𝐄𝐗𝐀𝐌𝐏𝐋𝐄:
-𝐚𝐝𝐝𝐫𝐞𝐩𝐥𝐲 𝐚𝐝𝐝 𝐡𝐢
-➜ 𝐡𝐢 লিখলে: হ্যালো কেমন আছো?
+addreply add hi - হ্যালো কেমন আছো?
+(অথবা: add hi - হ্যালো কেমন আছো?)
 ━━━━━━━━━━━━━━
 🧚‍♀️ 𝐍𝐈𝐉𝐇𝐔𝐌 𝐂𝐇𝐀𝐓𝐁𝐎𝐓`, event.threadID, event.messageID);
 	},
