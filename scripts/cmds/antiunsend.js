@@ -35,13 +35,13 @@ let settings = loadSettings();
 
 const isUserAdmin = async (api, event, senderID) => {
 	try {
-		const targetID = senderID || event.senderID;
+		const targetID = String(senderID || event.senderID);
 		if (global.config) {
-			if (Array.isArray(global.config.ADMINBOT) && global.config.ADMINBOT.includes(targetID)) return true;
-			if (Array.isArray(global.config.NDH) && global.config.NDH.includes(targetID)) return true;
+			if (Array.isArray(global.config.ADMINBOT) && global.config.ADMINBOT.map(String).includes(targetID)) return true;
+			if (Array.isArray(global.config.NDH) && global.config.NDH.map(String).includes(targetID)) return true;
 		}
 		const threadInfo = await api.getThreadInfo(event.threadID);
-		const adminIDs = (threadInfo.adminIDs || []).map(i => i.id || i);
+		const adminIDs = (threadInfo.adminIDs || []).map(i => String(i.id || i));
 		if (adminIDs.includes(targetID)) return true;
 	} catch (e) {}
 	return false;
@@ -50,8 +50,8 @@ const isUserAdmin = async (api, event, senderID) => {
 module.exports = {
 	config: {
 		name: "antiunsend",
-		aliases: ["unsend", "অ্যান্টিআনসেন্ড", "resend"],
-		version: "4.0",
+		aliases: ["unsend", "স্পাম",  "ডিলেট", "resend"],
+		version: "4.8",
 		author: LOCKED_AUTHOR,
 		countDown: 2,
 		role: 0,
@@ -84,7 +84,8 @@ module.exports = {
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
 » ❌ 𝐏𝐄𝐑𝐌𝐈𝐒𝐒𝐈𝐎𝐍 𝐃𝐄𝐍𝐈𝐄𝐃!
-» ⚠️ 𝐎𝐧𝐥𝐲 𝐀𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐭𝐮𝐫𝐧 𝐎𝐍 𝐀𝐧𝐭𝐢-𝐔𝐧𝐬𝐞𝐧𝐝.
+» ⚠️ 𝐎𝐧𝐥𝐲 𝐀𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐭𝐮𝐫𝐧 
+» ✅ 𝐎𝐍 𝐀𝐧𝐭𝐢-𝐔𝐧𝐬𝐞𝐧𝐝.
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
 			}
@@ -94,7 +95,8 @@ module.exports = {
 			return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-» 🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃!
+» 🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 
+» 🔐 𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃!
 » 📌 𝐒𝐭𝐚𝐭𝐮𝐬: Enabled ✅
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
@@ -106,7 +108,8 @@ module.exports = {
 			return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-» 🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 𝐃𝐄𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃!
+» 🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 
+» 🎀 𝐃𝐄𝐀𝐂𝐓𝐈𝐕𝐀𝐓𝐄𝐃!
 » 📌 𝐒𝐭𝐚𝐭𝐮𝐬: Disabled ❌
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
@@ -118,8 +121,10 @@ module.exports = {
 				return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-» ❌ 𝐏𝐄𝐑𝐌𝐈𝐒𝐒𝐈𝐎𝐍 𝐃𝐄𝐍𝐈𝐄𝐃!
-» ⚠️ 𝐎𝐧𝐥𝐲 𝐀𝐝𝐦𝐢𝐧𝐬 𝐜𝐚𝐧 𝐮𝐬𝐞 𝐫𝐞𝐬𝐭𝐚𝐫𝐭.
+» ❌ 𝐏𝐄𝐑𝐌𝐈𝐒𝐒𝐈𝐎𝐍 
+» ➡️ 𝐃𝐄𝐍𝐈𝐄𝐃!
+» ⚠️ 𝐎𝐧𝐥𝐲 𝐀𝐝𝐦𝐢𝐧𝐬 
+» 🧙‍♀️ 𝐜𝐚𝐧 𝐮𝐬𝐞 𝐫𝐞𝐬𝐭𝐚𝐫𝐭.
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
 			}
@@ -128,8 +133,10 @@ module.exports = {
 			return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-» 🔄 𝐀𝐃𝐌𝐈𝐍 𝐑𝐄𝐂𝐎𝐕𝐄𝐑𝐘 𝐑𝐄𝐒𝐄𝐓!
-» 📌 𝐘𝐨𝐮𝐫 𝐮𝐧𝐬𝐞𝐧𝐝 𝐫𝐞𝐜𝐨𝐯𝐞𝐫𝐲 𝐥𝐢𝐦𝐢𝐭 𝐡𝐚𝐬 𝐛𝐞𝐞𝐧 𝐫𝐞𝐬𝐞𝐭.
+» 🔄 𝐀𝐃𝐌𝐈𝐍 𝐑𝐄𝐂𝐎𝐕𝐄𝐑𝐘 
+» 🪯 𝐑𝐄𝐒𝐄𝐓!
+» 📌 𝐘𝐨𝐮𝐫 𝐮𝐧𝐬𝐞𝐧𝐝 𝐫𝐞𝐜𝐨𝐯𝐞𝐫𝐲 
+» 🖥️ 𝐥𝐢𝐦𝐢𝐭 𝐡𝐚𝐬 𝐛𝐞𝐞𝐧 𝐫𝐞𝐬𝐞𝐭.
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
 		}
@@ -139,9 +146,9 @@ module.exports = {
 			return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 𝐒𝐓𝐀𝐓𝐔𝐒:
-
-» 📌 𝐂𝐮𝐫𝐫𝐞𝐧𝐭 𝐒𝐭𝐚𝐭𝐮𝐬: ${statusStr}
+» 🛡️ 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 𝐒𝐓𝐀𝐓𝐔𝐒:
+» 📌 𝐂𝐮𝐫𝐫𝐞𝐧𝐭 𝐒𝐭𝐚𝐭𝐮𝐬: 
+» 🪯 ${statusStr}
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
 		}
@@ -151,9 +158,10 @@ module.exports = {
 ───────────────
 📌 𝐀𝐍𝐓𝐈-𝐔𝐍𝐒𝐄𝐍𝐃 𝐆𝐔𝐈𝐃𝐄:
 
-» antiunsend on (Admin Only)
-» antiunsend off (Anyone)
-» antiunsend restart / রিস্টার্ট (Admin Only)
+» antiunsend on Admin Only
+» antiunsend off Anyone
+» antiunsend restart 
+» রিস্টার্ট Admin Only
 » antiunsend status
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
@@ -170,8 +178,10 @@ module.exports = {
 				return api.sendMessage(
 `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
 ───────────────
-» 🔄 𝐀𝐃𝐌𝐈𝐍 𝐑𝐄𝐂𝐎𝐕𝐄𝐑𝐘 𝐑𝐄𝐒𝐄𝐓!
-» 📌 𝐘𝐨𝐮𝐫 𝐮𝐧𝐬𝐞𝐧𝐝 𝐫𝐞𝐜𝐨𝐯𝐞𝐫𝐲 𝐥𝐢𝐦𝐢𝐭 𝐡𝐚𝐬 𝐛𝐞𝐞𝐧 𝐫𝐞𝐬𝐞𝐭.
+» 🔄 𝐀𝐃𝐌𝐈𝐍 𝐑𝐄𝐂𝐎𝐕𝐄𝐑𝐘 
+» 🎀 𝐑𝐄𝐒𝐄𝐓!
+» 📌 𝐘𝐨𝐮𝐫 𝐮𝐧𝐬𝐞𝐧𝐝 𝐫𝐞𝐜𝐨𝐯𝐞𝐫𝐲 
+» 🔞 𝐥𝐢𝐦𝐢𝐭 𝐡𝐚𝐬 𝐛𝐞𝐞𝐧 𝐫𝐞𝐬𝐞𝐭.
 ───────────────
 » 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`, threadID, event.messageID);
 			}
@@ -202,23 +212,32 @@ module.exports = {
 				global.unsendUserCooldown.set(userKey, now);
 			}
 
-			let senderName = "User";
+			let senderName = "আবাল";
 			try {
 				if (Users && typeof Users.getNameInBand === "function") {
 					senderName = await Users.getNameInBand(senderID);
 				} else if (Users && typeof Users.getName === "function") {
 					senderName = await Users.getName(senderID);
+				} else if (api && typeof api.getUserInfo === "function") {
+					const res = await api.getUserInfo(senderID);
+					if (res && res[senderID] && res[senderID].name) {
+						senderName = res[senderID].name;
+					}
 				}
 			} catch (e) {}
 
-			let resendBody = `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑\n───────────────\n⚠️ 𝐔𝐍𝐒𝐄𝐍𝐓 𝐌𝐄𝐒𝐒𝐀𝐆𝐄 𝐃𝐄𝐓𝐄𝐂𝐓𝐄𝐃!\n\n» 👤 𝐒𝐞𝐧𝐝𝐞𝐫: ${senderName}\n`;
+			let resendBody = `» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
+_________________________
+কি ভাবছিস? 😏 ডিলিট করে বেঁচে যাবি নাকি? 😂
+» 👤 𝐒𝐞𝐧𝐝𝐞𝐫: ${senderName}\n`;
 
 			if (savedMsg.body) {
 				resendBody += `» 💬 𝐌𝐞𝐬𝐬𝐚𝐠𝐞: ${savedMsg.body}\n`;
 			} else if (savedMsg.attachmentPaths && savedMsg.attachmentPaths.length > 0) {
 				resendBody += `» 📁 𝐀𝐭𝐭𝐚𝐜𝐡𝐦𝐞𝐧𝐭: [${savedMsg.attachmentPaths.length} File(s)]\n`;
 			}
-			resendBody += `───────────────\n» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`;
+			resendBody += `───────────────
+» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`;
 
 			let attachmentStreams = [];
 			if (savedMsg.attachmentPaths && savedMsg.attachmentPaths.length > 0) {
@@ -233,6 +252,12 @@ module.exports = {
 				body: resendBody,
 				attachment: attachmentStreams.length > 0 ? attachmentStreams : undefined
 			}, threadID);
+
+			if (savedMsg.attachmentPaths && savedMsg.attachmentPaths.length > 0) {
+				savedMsg.attachmentPaths.forEach(p => {
+					try { fs.unlinkSync(p); } catch (e) {}
+				});
+			}
 
 			global.unsendMemoryMap.delete(event.messageID);
 			return;
@@ -265,10 +290,15 @@ module.exports = {
 
 							await new Promise((resolve, reject) => {
 								writer.on("finish", resolve);
-								writer.on("error", reject);
+								writer.on("error", (err) => {
+									writer.close();
+									reject(err);
+								});
 							});
 							cachedAttachmentPaths.push(filePath);
-						} catch (err) {}
+						} catch (err) {
+							try { fs.unlinkSync(filePath); } catch (e) {}
+						}
 					}
 				}
 			}
