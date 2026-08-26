@@ -27,7 +27,7 @@ function isURL(str) {
 module.exports = {
 	config: {
 		name: "cmd",
-		version: "1.17",
+		version: "1.18",
 		author: "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
 		countDown: 5,
 		role: 2,
@@ -38,11 +38,15 @@ module.exports = {
 		category: "admin",
 		guide: {
 			vi: "   {pn} load <tên file lệnh>"
-				+ "\n   {pn} loadAll"
+				+ "\n   {pn} loadAll | {pn} load-all"
+				+ "\n   {pn} unload <tên file lệnh>"
+				+ "\n   {pn} unloadAll | {pn} unload-all"
 				+ "\n   {pn} install <url> <tên file lệnh>: Tải xuống và cài đặt một tệp lệnh từ một url, url là đường dẫn đến tệp lệnh (raw)"
 				+ "\n   {pn} install <tên file lệnh> <code>: Tải xuống và cài đặt một tệp lệnh từ một code, code là mã của lệnh",
 			en: "   {pn} load <command file name>"
-				+ "\n   {pn} loadAll"
+				+ "\n   {pn} loadAll | {pn} load-all"
+				+ "\n   {pn} unload <command file name>"
+				+ "\n   {pn} unloadAll | {pn} unload-all"
 				+ "\n   {pn} install <url> <command file name>: Download and install a command file from a url, url is the path to the file (raw)"
 				+ "\n   {pn} install <command file name> <code>: Download and install a command file from a code, code is the code of the command"
 		}
@@ -58,6 +62,7 @@ module.exports = {
 			openConsoleToSeeError: "👀 | Hãy mở console để xem chi tiết lỗi",
 			missingCommandNameUnload: "⚠️ | Vui lòng nhập vào tên lệnh bạn muốn unload",
 			unloaded: "✅ | Đã unload command \"%1\" thành công",
+			unloadedAllSuccess: "✅ | Đã unload thành công tất cả (%1) command",
 			unloadedError: "❌ | Unload command \"%1\" thất bại với lỗi\n%2: %3",
 			missingUrlCodeOrFileName: "⚠️ | Vui lòng nhập vào url hoặc code và tên file lệnh bạn muốn cài đặt",
 			missingUrlOrCode: "⚠️ | Vui lòng nhập vào url hoặc code của tệp lệnh bạn muốn cài đặt",
@@ -80,6 +85,7 @@ module.exports = {
 			openConsoleToSeeError: "👀 | Open console to see error details",
 			missingCommandNameUnload: "⚠️ | Please enter the command name you want to unload",
 			unloaded: "✅ | Unloaded command \"%1\" successfully",
+			unloadedAllSuccess: "✅ | Unloaded all (%1) commands successfully",
 			unloadedError: "❌ | Failed to unload command \"%1\" with error\n%2: %3",
 			missingUrlCodeOrFileName: "⚠️ | Please enter the url or code and command file name you want to install",
 			missingUrlOrCode: "⚠️ | Please enter the url or code of the command file you want to install",
@@ -116,9 +122,10 @@ module.exports = {
 		}
 		else if (
 			(args[0] || "").toLowerCase() == "loadall"
+			|| (args[0] || "").toLowerCase() == "load-all"
 			|| (args[0] == "load" && args.length > 2)
 		) {
-			const fileNeedToLoad = args[0].toLowerCase() == "loadall" ?
+			const fileNeedToLoad = ((args[0] || "").toLowerCase() == "loadall" || (args[0] || "").toLowerCase() == "load-all") ?
 				fs.readdirSync(__dirname)
 					.filter(file =>
 						file.endsWith(".js") &&
@@ -149,13 +156,54 @@ module.exports = {
 
 			message.reply(msg);
 		}
-		else if (args[0] == "unload") {
-			if (!args[1])
-				return message.reply(getLang("missingCommandNameUnload"));
+		else if (args[0] == "unload" && args[1]) {
 			const infoUnload = unloadScripts("cmds", args[1], configCommands, getLang);
 			infoUnload.status == "success" ?
 				message.reply(getLang("unloaded", infoUnload.name)) :
 				message.reply(getLang("unloadedError", infoUnload.name, infoUnload.error.name, infoUnload.error.message));
+		}
+		else if (
+			(args[0] || "").toLowerCase() == "unloadall"
+			|| (args[0] || "").toLowerCase() == "unload-all"
+		) {
+			const { GoatBot } = global;
+			const currentCmd = commandName || "cmd";
+			let count = 0;
+
+			for (const [cmdName, cmdObj] of GoatBot.commands) {
+				if (cmdName == currentCmd || cmdObj.config?.name == currentCmd) continue;
+
+				if (cmdObj.config?.aliases) {
+					let aliases = cmdObj.config.aliases;
+					if (typeof aliases == "string") aliases = [aliases];
+					for (const alias of aliases) GoatBot.aliases.delete(alias);
+				}
+
+				const removeFromArr = (arr) => {
+					if (!arr) return;
+					for (let i = arr.length - 1; i >= 0; i--) {
+						if (arr[i] == cmdName || arr[i]?.commandName == cmdName) {
+							arr.splice(i, 1);
+						}
+					}
+				};
+
+				removeFromArr(GoatBot.onChat);
+				removeFromArr(GoatBot.onFirstChat);
+				removeFromArr(GoatBot.onEvent);
+				removeFromArr(GoatBot.onAnyEvent);
+
+				GoatBot.commands.delete(cmdName);
+				count++;
+			}
+
+			Object.keys(require.cache).forEach(key => {
+				if (key.includes("/scripts/cmds/") && !key.endsWith(`/${currentCmd}.js`)) {
+					delete require.cache[key];
+				}
+			});
+
+			message.reply(getLang("unloadedAllSuccess", count));
 		}
 		else if (args[0] == "install") {
 			let url = args[1];
@@ -256,16 +304,11 @@ module.exports = {
 	}
 };
 
-// do not edit this code because it use for obfuscate code
 const packageAlready = [];
 const spinner = "\\|/-";
 let count = 0;
 
 function loadScripts(folder, fileName, log, configCommands, api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, getLang, rawCode) {
-	// global.GoatBot[folderModules == "cmds" ? "commandFilesPath" : "eventCommandsFilesPath"].push({
-	// 	filePath: pathCommand,
-	// 	commandName: [commandName, ...validAliases]
-	// });
 	const storageCommandFilesPath = global.GoatBot[folder == "cmds" ? "commandFilesPath" : "eventCommandsFilesPath"];
 
 	try {
@@ -287,7 +330,7 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 			setMap = "eventCommands";
 			commandType = "event command";
 		}
-		// const pathCommand = path.normalize(path.normalize(process.cwd() + `/${folder}/${fileName}.js`));
+
 		let pathCommand;
 		if (process.env.NODE_ENV == "development") {
 			const devPath = path.normalize(process.cwd() + `/scripts/${folder}/${fileName}.dev.js`);
@@ -299,7 +342,6 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 		else
 			pathCommand = path.normalize(process.cwd() + `/scripts/${folder}/${fileName}.js`);
 
-		// ————————————————— CHECK PACKAGE ————————————————— //
 		const contentFile = fs.readFileSync(pathCommand, "utf8");
 		let allPackage = contentFile.match(regExpCheckPackage);
 		if (allPackage) {
@@ -307,9 +349,6 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 				.map(p => p.match(/[`'"]([^`'"]+)[`'"]/)[1])
 				.filter(p => p.indexOf("/") !== 0 && p.indexOf("./") !== 0 && p.indexOf("../") !== 0 && p.indexOf(__dirname) !== 0);
 			for (let packageName of allPackage) {
-				// @user/abc => @user/abc
-				// @user/abc/dist/xyz.js => @user/abc
-				// @user/abc/dist/xyz => @user/abc
 				if (packageName.startsWith('@'))
 					packageName = packageName.split('/').slice(0, 2).join('/');
 				else
@@ -337,15 +376,15 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 				}
 			}
 		}
-		// ———————————————— GET OLD COMMAND ———————————————— //
+
 		const oldCommand = require(pathCommand);
 		const oldCommandName = oldCommand?.config?.name;
-		// —————————————— CHECK COMMAND EXIST ——————————————— //
+
 		if (!oldCommandName) {
 			if (GoatBot[setMap].get(oldCommandName)?.location != pathCommand)
 				throw new Error(`${commandType} name "${oldCommandName}" is already exist in command "${removeHomeDir(GoatBot[setMap].get(oldCommandName)?.location || "")}"`);
 		}
-		// ————————————————— CHECK ALIASES ————————————————— //
+
 		if (oldCommand.config.aliases) {
 			let oldAliases = oldCommand.config.aliases;
 			if (typeof oldAliases == "string")
@@ -353,27 +392,21 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 			for (const alias of oldAliases)
 				GoatBot.aliases.delete(alias);
 		}
-		// ——————————————— DELETE OLD COMMAND ——————————————— //
+
 		delete require.cache[require.resolve(pathCommand)];
-		// —————————————————————————————————————————————————— //
 
-
-
-		// ———————————————— GET NEW COMMAND ———————————————— //
 		const command = require(pathCommand);
 		command.location = pathCommand;
 		const configCommand = command.config;
 		if (!configCommand || typeof configCommand != "object")
 			throw new Error("config of command must be an object");
-		// —————————————————— CHECK SYNTAX —————————————————— //
+
 		const scriptName = configCommand.name;
 
-		// Check onChat function
 		const indexOnChat = allOnChat.findIndex(item => item == oldCommandName);
 		if (indexOnChat != -1)
 			allOnChat.splice(indexOnChat, 1);
 
-		// Check onFirstChat function
 		const indexOnFirstChat = allOnChat.findIndex(item => item == oldCommandName);
 		let oldOnFirstChat;
 		if (indexOnFirstChat != -1) {
@@ -381,17 +414,14 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 			allOnFirstChat.splice(indexOnFirstChat, 1);
 		}
 
-		// Check onEvent function
 		const indexOnEvent = allOnEvent.findIndex(item => item == oldCommandName);
 		if (indexOnEvent != -1)
 			allOnEvent.splice(indexOnEvent, 1);
 
-		// Check onAnyEvent function
 		const indexOnAnyEvent = allOnAnyEvent.findIndex(item => item == oldCommandName);
 		if (indexOnAnyEvent != -1)
 			allOnAnyEvent.splice(indexOnAnyEvent, 1);
 
-		// Check onLoad function
 		if (command.onLoad)
 			command.onLoad({ api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData });
 
@@ -402,7 +432,7 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 			throw new Error('Function onStart must be a function!');
 		if (!scriptName)
 			throw new Error('Name of command is missing!');
-		// ————————————————— CHECK ALIASES ————————————————— //
+
 		if (configCommand.aliases) {
 			let { aliases } = configCommand;
 			if (typeof aliases == "string")
@@ -411,19 +441,18 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 				if (aliases.filter(item => item == alias).length > 1)
 					throw new Error(`alias "${alias}" duplicate in ${commandType} "${scriptName}" with file name "${removeHomeDir(pathCommand || "")}"`);
 				if (GoatBot.aliases.has(alias))
-					throw new Error(`alias "${alias}" is already exist in ${commandType} "${GoatBot.aliases.get(alias)}" with file name "${removeHomeDir(GoatBot[setMap].get(GoatBot.aliases.get(alias))?.location || "")}"`);
+					throw new Error(`alias "${alias}" is already exist in ${commandType} "${GoatBot.aliases.get(alias)}" with file name "${removeHomeDir(pathCommand || "")}"`);
 				GoatBot.aliases.set(alias, scriptName);
 			}
 		}
-		// ————————————————— CHECK ENVCONFIG ————————————————— //
-		// env Global
+
 		if (envGlobal) {
 			if (typeof envGlobal != "object" || Array.isArray(envGlobal))
 				throw new Error("envGlobal must be an object");
 			for (const key in envGlobal)
 				configCommands.envGlobal[key] = envGlobal[key];
 		}
-		// env Config
+
 		if (envConfig && typeof envConfig == "object" && !Array.isArray(envConfig)) {
 			if (!configCommands[typeEnvCommand][scriptName])
 				configCommands[typeEnvCommand][scriptName] = {};
@@ -437,7 +466,6 @@ function loadScripts(folder, fileName, log, configCommands, api, threadModel, us
 		if (findIndex != -1)
 			configCommands[keyUnloadCommand].splice(findIndex, 1);
 		fs.writeFileSync(client.dirConfigCommands, JSON.stringify(configCommands, null, 2));
-
 
 		if (command.onChat)
 			allOnChat.push(scriptName);
@@ -504,7 +532,7 @@ function unloadScripts(folder, fileName, configCommands, getLang) {
 	const indexOnAnyEvent = allOnAnyEvent.findIndex(item => item == commandName);
 	if (indexOnAnyEvent != -1)
 		allOnAnyEvent.splice(indexOnAnyEvent, 1);
-	// ————————————————— CHECK ALIASES ————————————————— //
+
 	if (command.config.aliases) {
 		let aliases = command.config?.aliases || [];
 		if (typeof aliases == "string")
