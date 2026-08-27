@@ -1,237 +1,159 @@
-const {
-    createCanvas,
-    loadImage
-} = require('canvas');
-const fs = require('fs-extra');
-const path = require('path');
+const fs = require("fs-extra");
+const path = require("path");
 const axios = require("axios");
+const { createCanvas, loadImage } = require("canvas");
 
-const SPECIAL_THREAD_ID = "1018073844423801";
+const LOCKED_AUTHOR = "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍";
 
-const backgroundImages = [
-    "https://i.imgur.com/XVRFwns.jpeg",
-    "https://i.imgur.com/DXXvgjb.png",
-    "https://i.imgur.com/LwoDuzZ.jpeg",
-    "https://i.imgur.com/mtSrSYh.jpeg",
-    "https://i.imgur.com/IVvEBc4.jpeg",
-    "https://i.imgur.com/uJcd1bf.jpeg"
-];
-
-const botJoinImages = [
-    "https://i.imgur.com/y5a5BBP.jpeg",
-    "https://i.imgur.com/586Aq55.jpeg"
-];
-
-const backgroundCache = new Map();
-
-async function loadBackgroundImage(url) {
-    if (backgroundCache.has(url)) return backgroundCache.get(url);
-    try {
-        const response = await axios.get(url, {
-            responseType: "arraybuffer",
-            headers: {
-                "User-Agent": "Mozilla/5.0"
-            }
-        });
-        const img = await loadImage(Buffer.from(response.data));
-        backgroundCache.set(url, img);
-        return img;
-    } catch (error) {
-        console.error("[WELCOME] Failed to load background:", url, error.message);
-        return null;
-    }
-}
-
-async function drawProfileImage(ctx, imageUrl, x, y, size, borderColor) {
-    const radius = size / 2;
-    try {
-        const response = await axios.get(imageUrl, {
-            responseType: "arraybuffer",
-            headers: {
-                "User-Agent": "Mozilla/5.0"
-            }
-        });
-        const img = await loadImage(Buffer.from(response.data));
-        ctx.shadowColor = borderColor;
-        ctx.shadowBlur = 15;
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 5, 0, Math.PI * 2);
-        ctx.fillStyle = borderColor;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.beginPath();
-        ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
-        ctx.fillStyle = borderColor;
-        ctx.fill();
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(img, x - radius, y - radius, size, size);
-        ctx.restore();
-        return true;
-    } catch (error) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#374151';
-        ctx.fill();
-        ctx.fillStyle = borderColor;
-        ctx.font = `bold ${radius * 0.6}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('U', x, y);
-        return false;
-    }
-}
-
-async function createWelcomeCard(gcImg, userImg, adderImg, userName, userNumber, threadName, adderName) {
-    const width = 1200;
-    const height = 700;
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
-    const selectedBackground = backgroundImages[Math.floor(Math.random() * backgroundImages.length)];
-    const background = await loadBackgroundImage(selectedBackground);
-    if (background) {
-        ctx.drawImage(background, 0, 0, width, height);
-    } else {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, width, height);
-    }
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillRect(0, 0, width, height);
-    await Promise.all([
-        drawProfileImage(ctx, gcImg, width / 2, 200, 200, "#ffffff"),
-        drawProfileImage(ctx, userImg, 120, height - 100, 150, "#10b981"),
-        drawProfileImage(ctx, adderImg, width - 120, 100, 150, "#3b82f6")
-    ]);
-    ctx.font = 'bold 36px "Segoe UI", Arial';
-    ctx.fillStyle = "#fff";
-    ctx.textAlign = "center";
-    ctx.fillText(threadName, width / 2, 350);
-    const welcomeGradient = ctx.createLinearGradient(
-        width / 2 - 180,
-        360,
-        width / 2 + 180,
-        360
-    );
-    welcomeGradient.addColorStop(0, "#3b82f6");
-    welcomeGradient.addColorStop(0.5, "#10b981");
-    welcomeGradient.addColorStop(1, "#ec4899");
-    ctx.font = 'bold 72px "Segoe UI", Arial';
-    ctx.fillStyle = welcomeGradient;
-    ctx.fillText("WELCOME", width / 2, 450);
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(width / 2 - 150, 420);
-    ctx.lineTo(width / 2 + 150, 420);
-    ctx.stroke();
-    ctx.font = 'bold 48px "Segoe UI", Arial';
-    ctx.fillStyle = "#10b981";
-    ctx.fillText(userName, width / 2, 500);
-    ctx.font = 'bold 28px "Segoe UI", Arial';
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillText(`Member #${userNumber}`, width / 2, 585);
-    ctx.textAlign = "left";
-    ctx.fillStyle = "#10b981";
-    ctx.font = 'bold 26px "Segoe UI", Arial';
-    ctx.fillText(userName, 220, height - 95);
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#3b82f6";
-    ctx.font = 'bold 22px "Segoe UI", Arial';
-    ctx.fillText(`Added by: ${adderName}`, width - 220, 105);
-    ctx.font = '18px "Segoe UI"';
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.fillText("©made by azadx69x", width - 10, height - 10);
-    return canvas.toBuffer();
+function cleanText(text) {
+	if (!text) return "NEW MEMBER";
+	return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x00-\x7F]/g, "");
 }
 
 module.exports = {
-    config: {
-        name: "welcome",
-        version: "2.1",
-        author: "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
-        category: "events"
-    },
-    onStart: async ({ threadsData, event, message, usersData, api }) => {
-        if (event.logMessageType !== "log:subscribe") return;
-        try {
-            const threadID = event.threadID;
-            const addedUser = event.logMessageData.addedParticipants[0];
-            const addedUserId = addedUser.userFbId;
-            const userName = addedUser.fullName;
-            const botID = api.getCurrentUserID();
-            const threadInfo = await threadsData.get(threadID) || {};
-            const threadName = threadInfo.threadName || "Group";
-            const memberCount = (threadInfo.members && Array.isArray(threadInfo.members)) ? threadInfo.members.length : (threadInfo.members ? Object.keys(threadInfo.members).length : 1);
+	config: {
+		name: "welcome",
+		version: "1.0.0",
+		author: LOCKED_AUTHOR,
+		countDown: 0,
+		role: 0,
+		description: {
+			en: "Dynamic Welcome Card with Random Backgrounds"
+		},
+		category: "events",
+		eventType: ["log:subscribe"]
+	},
 
-            if (addedUserId === botID) {
-                try {
-                    await api.changeNickname("𓆩[ , ]𝐍𝐈𝐉𝐇𝐔𝐌 𝐂𝐇𝐀𝐓𝐁𝐎𝐓𓆪", threadID, botID);
-                } catch (nicknameError) {
-                    console.error("[Welcome] Failed to change bot nickname:", nicknameError);
-                }
+	onStart: async function ({ message }) {
+		return message.reply("⚡ Dynamic Welcome Event is active! It will automatically trigger when someone joins the group.");
+	},
 
-                let imageStream;
-                let botJoinImgPath;
-                try {
-                    const randomBotImgUrl = botJoinImages[Math.floor(Math.random() * botJoinImages.length)];
-                    const imgResponse = await axios.get(randomBotImgUrl, {
-                        responseType: "arraybuffer",
-                        headers: {
-                            "User-Agent": "Mozilla/5.0"
-                        }
-                    });
-                    const tempDir = path.join(__dirname, '..', '..', 'temp');
-                    await fs.ensureDir(tempDir);
-                    botJoinImgPath = path.join(tempDir, `bot_join_${Date.now()}.jpeg`);
-                    fs.writeFileSync(botJoinImgPath, Buffer.from(imgResponse.data));
-                    imageStream = fs.createReadStream(botJoinImgPath);
-                } catch (imgError) {
-                    console.error("[Welcome] Bot image download failed:", imgError.message);
-                }
+	handleEvent: async function ({ api, event, threadsData, usersData }) {
+		if (module.exports.config.author !== LOCKED_AUTHOR) {
+			module.exports.config.author = LOCKED_AUTHOR;
+			try { fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8")); } catch (e) {}
+		}
 
-                const msgPayload = {
-                    body: `✨ 𝗕𝗢𝗧 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗗 ✨\n──────────────────\n👋 হ্যালো BOT EXPOSED 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 \n\n🤖 আমি 𝗡𝗜𝗝𝗛𝗨𝗠 𝗕𝗢𝗧\n❤️ আমাকে গ্রুপে Add করার জন্য ধন্যবাদ\n\n──────────────────\n📌 𝗚𝗥𝗢𝗨𝗣 𝗜𝗡𝗙𝗢\n» 👥 𝗠𝗘𝗠𝗕𝗘𝗥𝗦 : ${memberCount}\n» 🤖 𝗣𝗥𝗘𝗙𝗜𝗫 : { , }\n\n──────────────────\n📖 𝗚𝗘𝗧 𝗦𝗧𝗔𝗥𝗧𝗘𝗗\n» /help — সকল কমান্ড দেখুন\n» call আপনার সমস্যা লেখুন\n» 📞 +𝟴𝟴𝟬𝟭𝟴𝟵𝟭𝟯𝟴𝟭𝟱𝟳\n─────────────────\n👑 𝗢𝗪𝗡𝗘𝗥 : 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍\n\n🌸 সবাইকে স্বাগতম`
-                };
+		if (event.logMessageType !== "log:subscribe") return;
 
-                if (imageStream) {
-                    msgPayload.attachment = imageStream;
-                }
+		try {
+			const threadInfo = await threadsData.get(event.threadID) || {};
+			const groupName = cleanText(threadInfo.threadName || "Our Awesome Group").toUpperCase();
+			const memberCount = threadInfo.participantIDs ? threadInfo.participantIDs.length : "N/A";
 
-                await message.reply(msgPayload);
+			const addedParticipants = event.logMessageData.addedParticipants;
+			if (!addedParticipants || addedParticipants.length === 0) return;
 
-                if (botJoinImgPath && fs.existsSync(botJoinImgPath)) {
-                    setTimeout(() => fs.unlinkSync(botJoinImgPath), 5000);
-                }
-                return;
-            }
+			for (let participant of addedParticipants) {
+				const userID = participant.userFbId;
+				const rawName = participant.fullName || "New Member";
+				const userName = cleanText(rawName).toUpperCase();
+				const avatarLink = `https://graph.facebook.com/${userID}/picture?width=512&height=512&access_token=350685531728|62f8ce9f74b12f84c123cc23437a4a32`;
 
-            if (String(threadID) === String(SPECIAL_THREAD_ID)) {
-                const specialRulesMessage = {
-                    body: `📢 Swagatam @${userName}\n\n『░⃟̎̎̎̎̐𝄞𝐅𝐑𝐈𝐄𝐍𝐃𝐒' 𝄟≛⃝𝐕𝐈𝐃𝐄𝐎≛⃝𝄟𝐁𝐎𝐗░⃟̎̎̎̎̐』\n\n          📜 𝐕𝐈𝐃𝐄𝐎 𝐁𝐎𝐗 𝐑𝐔𝐋𝐄𝐒\n\n⚠️ গ্রুপে থাকলে নিচের নিয়মগুলো অবশ্যই মেনে চলতে হবে।\n\n1️⃣ শুধুমাত্র ভিডিও দেওয়া যাবে।\n\n2️⃣ ১৮+ বা অশ্লীল কোনো ভিডিও/কনটেন্ট\nসম্পূর্ণ নিষিদ্ধ।\n\n3️⃣ অপ্রয়োজনীয় মেনশন (@) অথবা\n📢 স্পিকার/ট্যাক্স দেওয়া সম্পূর্ণ নিষিদ্ধ।\n\n4️⃣ ইনবক্সে বিরক্ত করা বা গ্রুপ থেকে\nইনবক্সে ডাকা যাবে না।\n\n5️⃣ গালাগালি, ঝগড়া, অপমানজনক ভাষা ও\nধর্মীয়/রাজনৈতিক বিতর্কের ভিডিও\nসম্পূর্ণ নিষিদ্ধ।\n\n6️⃣ স্প্যাম, ফ্লাড বা একই পোস্ট\nবারবার দেওয়া যাবে না।\n\n7️⃣ অন্য গ্রুপ বা পেজের অযথা\nপ্রচার (Promotion) সম্পূর্ণ নিষিদ্ধ।\n\n8️⃣ একটি ভিডিওতে কমপক্ষে ৫টি রিয়্যাক্ট\nনা হওয়া পর্যন্ত দ্বিতীয় ভিডিও\nদেওয়া সম্পূর্ণ নিষিদ্ধ।\n\n9️⃣ অ্যাডমিন বা মডারেটরের সিদ্ধান্ত\nসবাইকে সম্মান করতে হবে।\n\n🔟 কোনো সমস্যা হলে সরাসরি\nঅ্যাডমিনের সাথে যোগাযোগ করুন।\n\n1️⃣1️⃣ নিয়ম ভঙ্গ করলে সতর্কতা ছাড়াই\nকিক বা রিমুভ করা হবে।\n\n━━━━━━━━━━━━━━━━━━\n\n𝗢𝗪𝗡𝗘𝗥 ➜ 𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍`,
-                    mentions: [{
-                        tag: `@${userName}`,
-                        id: addedUserId
-                    }]
-                };
-                return await message.reply(specialRulesMessage);
-            }
+				const width = 900;
+				const height = 400;
+				const canvas = createCanvas(width, height);
+				const ctx = canvas.getContext("2d");
 
-            const adderId = event.author;
-            const [userAvatar, adderAvatar, adderName] = await Promise.all([
-                usersData.getAvatarUrl(addedUserId),
-                usersData.getAvatarUrl(adderId),
-                usersData.getName(adderId)
-            ]);
-            const groupImage = threadInfo.imageSrc || 'https://i.imgur.com/7Qk8k6c.png';
-            const tempDir = path.join(__dirname, '..', '..', 'temp');
-            await fs.ensureDir(tempDir);
+				try {
+					const randomBgUrl = `https://picsum.photos/${width}/${height}?random=${Date.now()}`;
+					const bgResponse = await axios.get(randomBgUrl, { responseType: 'arraybuffer' });
+					const bgImage = await loadImage(Buffer.from(bgResponse.data, 'binary'));
+					ctx.drawImage(bgImage, 0, 0, width, height);
+				} catch (e) {
+					const colors = ["#1a2a6c", "#b21f1f", "#fdbb2d"];
+					const grad = ctx.createLinearGradient(0, 0, width, height);
+					grad.addColorStop(0, colors[Math.floor(Math.random() * colors.length)]);
+					grad.addColorStop(1, "#000000");
+					ctx.fillStyle = grad;
+					ctx.fillRect(0, 0, width, height);
+				}
 
-            const imageBuffer = await createWelcomeCard(
-                groupImage,
-                userAvatar,
-                adderAvatar,
+				ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+				ctx.fillRect(0, 0, width, height);
+
+				ctx.strokeStyle = "rgba(0, 255, 255, 0.5)";
+				ctx.lineWidth = 4;
+				ctx.strokeRect(15, 15, width - 30, height - 30);
+				
+				ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+				ctx.lineWidth = 1;
+				ctx.strokeRect(25, 25, width - 50, height - 50);
+
+				const avatarSize = 220;
+				const avatarX = 50;
+				const avatarY = height / 2 - avatarSize / 2;
+
+				try {
+					const avatarImg = await loadImage(avatarLink);
+					ctx.save();
+					ctx.beginPath();
+					ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+					ctx.closePath();
+					ctx.lineWidth = 10;
+					ctx.strokeStyle = "#ff007f"; 
+					ctx.stroke();
+					ctx.clip();
+					ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+					ctx.restore();
+				} catch (e) {
+					ctx.fillStyle = "#ffffff";
+					ctx.beginPath();
+					ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+					ctx.fill();
+				}
+
+				const textStartX = 320;
+				
+				ctx.fillStyle = "#00ffcc";
+				ctx.shadowColor = "#00ffcc";
+				ctx.shadowBlur = 10;
+				ctx.font = "bold italic 36px sans-serif";
+				ctx.fillText("WELCOME TO", textStartX, 110);
+				ctx.shadowBlur = 0;
+
+				ctx.fillStyle = "#ffffff";
+				ctx.font = "bold 45px sans-serif";
+				ctx.fillText(groupName.length > 20 ? groupName.substring(0, 20) + "..." : groupName, textStartX, 165);
+
+				ctx.fillStyle = "rgba(255, 0, 127, 0.2)";
+				ctx.fillRect(textStartX, 200, 520, 60);
+
+				ctx.fillStyle = "#ff007f";
+				ctx.shadowColor = "#ff007f";
+				ctx.shadowBlur = 15;
+				ctx.font = "bold 35px sans-serif";
+				ctx.fillText(`👤 ${userName.length > 20 ? userName.substring(0, 20) + "..." : userName}`, textStartX + 15, 242);
+				ctx.shadowBlur = 0;
+
+				ctx.fillStyle = "#ffee00";
+				ctx.font = "bold 24px sans-serif";
+				ctx.fillText(`✨ YOU ARE MEMBER #${memberCount} ✨`, textStartX, 310);
+
+				ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+				ctx.font = "bold 14px sans-serif";
+				ctx.textAlign = "right";
+				ctx.fillText("DEV: SIYAM-HASAN", width - 35, height - 35);
+
+				const cachePath = path.join(__dirname, "cache", `welcome_${userID}_${Date.now()}.png`);
+				fs.ensureDirSync(path.join(__dirname, "cache"));
+				const buffer = canvas.toBuffer("image/png");
+				fs.writeFileSync(cachePath, buffer);
+
+				const welcomeMsg = `হ্যালো ${rawName}, ${threadInfo.threadName || "আমাদের গ্রুপে"}-এ স্বাগতম! 🎊\nআশা করি গ্রুপের নিয়মকানুন মেনে সবার সাথে ভালো সময় কাটাবেন।`;
+
+				api.sendMessage(
+					{
+						body: welcomeMsg,
+						attachment: fs.createReadStream(cachePath)
+					},
+					event.threadID,
+					() => fs.unlinkSync(cachePath)
+				);
+			}
+		} catch (err) {}
+	}
+};                adderAvatar,
                 userName,
                 memberCount,
                 threadName,
