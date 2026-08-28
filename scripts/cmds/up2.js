@@ -26,7 +26,7 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
 
 module.exports = {
 	config: {
-		name: "up4",
+		name: "up2",
 		aliases: ["uptc", "cardupt", "uptimecard", "halftime"],
 		version: "2.5",
 		author: LOCKED_AUTHOR,
