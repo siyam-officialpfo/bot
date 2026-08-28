@@ -1,162 +1,260 @@
-const fs = require("fs");
+const LOCKED_AUTHOR = "SIYAM-HASAN";
+const { createCanvas } = require("canvas");
+const fs = require("fs-extra");
 const path = require("path");
-const Canvas = require("canvas");
+const os = require("os");
 
 module.exports = {
-  config: {
-    name: "up2",
-    aliases: ["uptime2", "upt2"],
-    version: "1.7",
-    author: "MR_FARHAN",
-    countDown: 5,
-    role: 0,
-    shortDescription: "Bot Status",
-    longDescription: "background card with clean premium spacing",
-    category: "system",
-    guide: "{p}uptime"
-  },
+	config: {
+		name: "up2",
+		aliases: ["status", "আপ2", "uptime2"],
+		version: "6.0",
+		author: LOCKED_AUTHOR,
+		countDown: 5,
+		role: 0,
+		description: {
+			en: "Advanced real-time status card with detailed system info"
+		},
+		category: "system",
+		guide: {
+			en: "{pn}"
+		}
+	},
 
-  onStart: async function ({ message, api, event }) {
-    const startTime = Date.now();
-    try {
-      api.setMessageReaction("⏳", event.messageID, () => {}, true);
-      
-      const uptime = process.uptime();
-      const h = Math.floor(uptime / 3600);
-      const m = Math.floor((uptime % 3600) / 60);
-      const s = Math.floor(uptime % 60);
-      const uptimeStr = `${h}h ${m}m ${s}s`;
+	onStart: async function ({ api, event }) {
+		if (module.exports.config.author !== LOCKED_AUTHOR) {
+			module.exports.config.author = LOCKED_AUTHOR;
+		}
 
-      const ping = Date.now() - startTime;
-      const memUsed = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
-      const memTotal = (process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2);
-      const memPercent = ((memUsed / memTotal) * 100).toFixed(1);
+		const { threadID, messageID } = event;
+		const start = Date.now();
 
-      const cpuUsage = Math.min(
-        ((process.cpuUsage().user + process.cpuUsage().system) / 1000000) % 100,
-        100
-      );
+		try {
+			const uptime = process.uptime();
+			const days = Math.floor(uptime / 86400);
+			const hours = Math.floor((uptime % 86400) / 3600);
+			const minutes = Math.floor((uptime % 3600) / 60);
+			const seconds = Math.floor(uptime % 60);
 
-      const threads = process._getActiveHandles().length;
-      const nodeVersion = process.version;
-      const platform = process.platform.toUpperCase();
-      
-      const canvas = Canvas.createCanvas(1400, 900);
-      const ctx = canvas.getContext("2d");
+			const memory = process.memoryUsage();
+			const usedRAM = (memory.heapUsed / 1024 / 1024).toFixed(1);
+			const totalHeap = (memory.heapTotal / 1024 / 1024).toFixed(1);
+			const ping = Date.now() - start;
 
-      const bg = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      bg.addColorStop(0, "#000428");
-      bg.addColorStop(1, "#004e92");
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      const containerX = 30;
-      const containerY = 30;
-      const containerW = canvas.width - 60;
-      const containerH = canvas.height - 60;
+			const cpuLoad = os.loadavg()[0].toFixed(2);
+			const cpuCores = os.cpus().length;
+			const totalMemGB = (os.totalmem() / 1024 / 1024 / 1024).toFixed(1);
+			const freeMemGB = (os.freemem() / 1024 / 1024 / 1024).toFixed(1);
+			const usedMemGB = (totalMemGB - freeMemGB).toFixed(1);
+			const memPercent = ((1 - os.freemem() / os.totalmem()) * 100).toFixed(1);
+			const heapPercent = ((memory.heapUsed / memory.heapTotal) * 100).toFixed(1);
 
-      ctx.fillStyle = "rgba(255,255,255,0.07)";
-      ctx.beginPath();
-      ctx.roundRect(containerX, containerY, containerW, containerH, 45);
-      ctx.fill();
-      
-      ctx.fillStyle = "rgba(0,0,0,0.35)";
-      ctx.beginPath();
-      ctx.roundRect(containerX, containerY, containerW, 150, 45);
-      ctx.fill();
+			const platform = os.platform();
+			const arch = os.arch();
+			const hostname = os.hostname();
+			const nodeVersion = process.version;
+			const pid = process.pid;
 
-      ctx.font = "bold 78px Segoe UI";
-      ctx.fillStyle = "#FFFFFF";
-      ctx.textAlign = "center";
-      ctx.fillText("📉 BOT STATUS DASHBOARD", canvas.width / 2, containerY + 95);
+			const width = 980;
+			const height = 640;
+			const canvas = createCanvas(width, height);
+			const ctx = canvas.getContext("2d");
 
-      ctx.font = "italic 30px Segoe UI";
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fillText("All systems running smoothly", canvas.width / 2, containerY + 130);
-      
-      const stats = [
-        { icon: "⏰", title: "SYSTEM UPTIME", value: uptimeStr, sub: "Running Time", color: "#FFD700", bar: Math.min((uptime / 3600) * 4.1667, 100) },
-        { icon: "📡", title: "NETWORK PING", value: `${ping} ms`, sub: "Latency", color: "#00FFAA", bar: Math.min(ping / 10, 100) },
-        { icon: "💾", title: "MEMORY USAGE", value: `${memUsed} MB`, sub: `${memPercent}% of ${memTotal}MB`, color: "#00FF00", bar: memPercent },
-        { icon: "📊", title: "CPU LOAD", value: `${cpuUsage.toFixed(1)}%`, sub: "Processor", color: "#FFAA00", bar: cpuUsage },
-        { icon: "⚒️", title: "NODE VERSION", value: nodeVersion, sub: "Runtime", color: "#9D4EDD", bar: 100 },
-        { icon: "👑", title: "BOT OWNER", value: "𝐒𝐈𝐘𝐀𝐌", sub: "Administrator", color: "#FFA500", bar: 100 }
-      ];
+			// Background
+			const bg = ctx.createLinearGradient(0, 0, width, height);
+			bg.addColorStop(0, "#05050c");
+			bg.addColorStop(0.5, "#0b0b16");
+			bg.addColorStop(1, "#070710");
+			ctx.fillStyle = bg;
+			ctx.fillRect(0, 0, width, height);
 
-      const boxW = (containerW - 120) / 2;
-      const boxH = 190;
-      const startX = containerX + 40;
-      const startY = containerY + 180;
+			// Lights
+			const light1 = ctx.createRadialGradient(490, 0, 20, 490, 90, 480);
+			light1.addColorStop(0, "rgba(139, 92, 246, 0.2)");
+			light1.addColorStop(1, "rgba(139, 92, 246, 0)");
+			ctx.fillStyle = light1;
+			ctx.fillRect(0, 0, width, height);
 
-      stats.forEach((s, i) => {
-        const row = Math.floor(i / 2);
-        const col = i % 2;
-        const x = startX + col * (boxW + 40);
-        const y = startY + row * (boxH + 30);
+			const light2 = ctx.createRadialGradient(900, 600, 30, 850, 500, 280);
+			light2.addColorStop(0, "rgba(34, 211, 238, 0.14)");
+			light2.addColorStop(1, "rgba(34, 211, 238, 0)");
+			ctx.fillStyle = light2;
+			ctx.fillRect(0, 0, width, height);
 
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
-        ctx.beginPath();
-        ctx.roundRect(x, y, boxW, boxH, 28);
-        ctx.fill();
+			// Main Card
+			ctx.save();
+			ctx.shadowColor = "rgba(139, 92, 246, 0.35)";
+			ctx.shadowBlur = 30;
+			roundRect(ctx, 35, 35, 910, 570, 28);
+			ctx.fillStyle = "rgba(12, 12, 24, 0.96)";
+			ctx.fill();
+			ctx.restore();
 
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = 3;
-        ctx.stroke();
+			ctx.strokeStyle = "rgba(167, 139, 250, 0.4)";
+			ctx.lineWidth = 2.5;
+			roundRect(ctx, 35, 35, 910, 570, 28);
+			ctx.stroke();
 
-        ctx.font = "bold 58px Segoe UI";
-        ctx.fillStyle = s.color;
-        ctx.fillText(s.icon, x + 35, y + 75);
+			// Header
+			const headerGrad = ctx.createLinearGradient(55, 55, 925, 55);
+			headerGrad.addColorStop(0, "#7c3aed");
+			headerGrad.addColorStop(1, "#06b6d4");
+			ctx.fillStyle = headerGrad;
+			roundRect(ctx, 55, 55, 870, 68, 16);
+			ctx.fill();
 
-        ctx.font = "bold 28px Segoe UI";
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillText(s.title, x + 200, y + 55);
+			ctx.font = "bold 30px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.textAlign = "center";
+			ctx.fillText("SIYAM-HASAN  •  BOT STATUS", 490, 98);
 
-        ctx.font = "18px Segoe UI";
-        ctx.fillStyle = "rgba(255,255,255,0.7)";
-        ctx.fillText(s.sub, x + 150, y + 90);
+			// Big Uptime
+			ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+			roundRect(ctx, 60, 145, 860, 90, 14);
+			ctx.fill();
+			ctx.fillStyle = "#a78bfa";
+			ctx.fillRect(60, 145, 860, 5);
 
-        ctx.font = "bold 42px Segoe UI";
-        ctx.fillStyle = s.color;
-        ctx.textAlign = "right";
-        ctx.fillText(s.value, x + boxW - 35, y + 145);
-        ctx.textAlign = "left";
+			ctx.font = "bold 16px Arial";
+			ctx.fillStyle = "#c4b5fd";
+			ctx.fillText("BOT UPTIME", 490, 175);
 
-        const barY = y + boxH - 30;
-        const barW = boxW - 70;
+			ctx.font = "bold 34px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.fillText(`${days}d   ${hours}h   ${minutes}m   ${seconds}s`, 490, 215);
 
-        ctx.fillStyle = "rgba(255,255,255,0.15)";
-        ctx.beginPath();
-        ctx.roundRect(x + 35, barY, barW, 12, 6);
-        ctx.fill();
+			// 4 Info Boxes
+			const boxes = [
+				{ title: "PING", value: `${ping} ms`, x: 60, color: "#34d399" },
+				{ title: "PROCESS RAM", value: `${usedRAM} MB`, x: 280, color: "#fbbf24" },
+				{ title: "CPU LOAD", value: cpuLoad, x: 500, color: "#22d3ee" },
+				{ title: "CPU CORES", value: `${cpuCores}`, x: 720, color: "#a78bfa" }
+			];
 
-        ctx.fillStyle = s.color;
-        ctx.beginPath();
-        ctx.roundRect(x + 35, barY, (barW * s.bar) / 100, 12, 6);
-        ctx.fill();
+			boxes.forEach((box) => {
+				const y = 255;
+				ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+				roundRect(ctx, box.x, y, 200, 85, 12);
+				ctx.fill();
 
-        ctx.font = "bold 16px Segoe UI";
-        ctx.fillStyle = "#FFFFFF";
-        ctx.textAlign = "center";
-        ctx.fillText(`${Math.min(s.bar, 100).toFixed(1)}%`, x + 35 + barW / 2, barY - 12);
-        ctx.textAlign = "left";
-      });
-      
-      const filePath = path.join(__dirname, `uptime-${Date.now()}.png`);
-      fs.writeFileSync(filePath, canvas.toBuffer("image/png"));
-      
-      api.setMessageReaction("✅", event.messageID, () => {}, true);
-      
-      await message.reply({
-        body: "◢◤━━━━━━━━━━━━━◥◣\n      𝗚𝗢𝗔𝗧 𝗕𝗢𝗧 V5 𝗨𝗣𝗧𝗜𝗠𝗘\n          𝗢𝗪𝗡𝗘𝗥:-𝐒𝐈𝐘𝐀𝐌\n◥◣━━━━━━━━━━━━━◢◤",
-        attachment: fs.createReadStream(filePath)
-      });
+				ctx.fillStyle = box.color;
+				ctx.shadowColor = box.color;
+				ctx.shadowBlur = 10;
+				ctx.fillRect(box.x, y, 200, 4);
+				ctx.shadowBlur = 0;
 
-      setTimeout(() => fs.existsSync(filePath) && fs.unlinkSync(filePath), 5000);
+				ctx.font = "bold 13px Arial";
+				ctx.fillStyle = "#a5b4fc";
+				ctx.textAlign = "center";
+				ctx.fillText(box.title, box.x + 100, y + 32);
 
-    } catch (err) {
-      console.error("Uptime error:", err);
-      api.setMessageReaction("❌", event.messageID, () => {}, true);
-      message.reply("❌ Dashboard generate problem.");
-    }
-  }
+				ctx.font = "bold 22px Arial";
+				ctx.fillStyle = "#ffffff";
+				ctx.fillText(box.value, box.x + 100, y + 62);
+			});
+
+			// Progress Bars Section
+			ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+			roundRect(ctx, 60, 360, 860, 100, 12);
+			ctx.fill();
+			ctx.fillStyle = "#06b6d4";
+			ctx.fillRect(60, 360, 860, 4);
+
+			// Process RAM Bar
+			ctx.font = "bold 14px Arial";
+			ctx.fillStyle = "#a5b4fc";
+			ctx.textAlign = "left";
+			ctx.fillText(`Process RAM  ${heapPercent}%`, 85, 395);
+
+			ctx.fillStyle = "rgba(50, 50, 80, 1)";
+			roundRect(ctx, 85, 410, 380, 14, 7);
+			ctx.fill();
+			ctx.fillStyle = "#fbbf24";
+			roundRect(ctx, 85, 410, 380 * (heapPercent / 100), 14, 7);
+			ctx.fill();
+
+			// System RAM Bar
+			ctx.fillStyle = "#a5b4fc";
+			ctx.fillText(`System RAM  ${memPercent}%`, 500, 395);
+
+			ctx.fillStyle = "rgba(50, 50, 80, 1)";
+			roundRect(ctx, 500, 410, 380, 14, 7);
+			ctx.fill();
+			ctx.fillStyle = "#22d3ee";
+			roundRect(ctx, 500, 410, 380 * (memPercent / 100), 14, 7);
+			ctx.fill();
+
+			ctx.font = "12px Arial";
+			ctx.fillStyle = "#94a3b8";
+			ctx.fillText(`${usedRAM} / ${totalHeap} MB`, 85, 445);
+			ctx.fillText(`${usedMemGB} / ${totalMemGB} GB`, 500, 445);
+
+			// Bottom Details
+			ctx.fillStyle = "rgba(24, 24, 46, 0.95)";
+			roundRect(ctx, 60, 480, 860, 95, 12);
+			ctx.fill();
+			ctx.fillStyle = "#7c3aed";
+			ctx.fillRect(60, 480, 860, 4);
+
+			ctx.font = "bold 14px Arial";
+			ctx.fillStyle = "#a5b4fc";
+			ctx.textAlign = "left";
+
+			ctx.fillText("Node.js", 85, 515);
+			ctx.fillText("Platform", 85, 550);
+			ctx.fillText("Architecture", 300, 515);
+			ctx.fillText("Hostname", 300, 550);
+			ctx.fillText("PID", 560, 515);
+			ctx.fillText("Status", 560, 550);
+
+			ctx.font = "bold 14px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.fillText(nodeVersion, 170, 515);
+			ctx.fillText(platform.toUpperCase(), 170, 550);
+			ctx.fillText(arch.toUpperCase(), 420, 515);
+			ctx.fillText(hostname.substring(0, 14), 400, 550);
+			ctx.fillText(String(pid), 620, 515);
+			ctx.fillText("ONLINE", 640, 550);
+
+			// Footer
+			ctx.textAlign = "right";
+			ctx.font = "bold 14px Arial";
+			ctx.fillStyle = "#c4b5fd";
+			ctx.fillText("NIJHUM CHATBOT", 890, 530);
+			ctx.font = "12px Arial";
+			ctx.fillStyle = "#7c3aed";
+			ctx.fillText("Premium Real-time Card", 890, 555);
+
+			// Save & Send
+			const cachePath = path.join(__dirname, "cache");
+			await fs.ensureDir(cachePath);
+			const filePath = path.join(cachePath, `status_${Date.now()}.png`);
+			await fs.writeFile(filePath, canvas.toBuffer("image/png"));
+
+			await api.sendMessage({
+				body: "BOT STATUS CARD",
+				attachment: fs.createReadStream(filePath)
+			}, threadID, messageID);
+
+			setTimeout(() => fs.unlink(filePath).catch(() => {}), 30000);
+
+		} catch (err) {
+			console.log(err);
+			return api.sendMessage("Failed to generate status card.", threadID, messageID);
+		}
+	}
 };
+
+function roundRect(ctx, x, y, w, h, r) {
+	ctx.beginPath();
+	ctx.moveTo(x + r, y);
+	ctx.lineTo(x + w - r, y);
+	ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+	ctx.lineTo(x + w, y + h - r);
+	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+	ctx.lineTo(x + r, y + h);
+	ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+	ctx.lineTo(x, y + r);
+	ctx.quadraticCurveTo(x, y, x + r, y);
+	ctx.closePath();
+        }
