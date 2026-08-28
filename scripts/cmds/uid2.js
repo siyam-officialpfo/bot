@@ -6,7 +6,7 @@ const { createCanvas, loadImage, registerFont } = require("canvas");
 
 module.exports = {
   config: {
-    name: "uid",
+    name: "uid2",
     version: "0.0.1",
     author: "MR_FARHAN",
     countDown: 5,
