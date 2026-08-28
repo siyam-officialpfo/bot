@@ -63,12 +63,17 @@ module.exports = {
 			const strMins = String(minutes).padStart(2, '0');
 			const strSecs = String(seconds).padStart(2, '0');
 
-			// Real System RAM Metrics Fix
+			// Real System RAM Metrics
 			const totalMem = os.totalmem();
 			const freeMem = os.freemem();
 			const usedMem = totalMem - freeMem;
 			const memMB = (usedMem / (1024 * 1024)).toFixed(1);
 			const ramPercent = Math.min(Math.round((usedMem / totalMem) * 100), 100);
+
+			// Dynamic CPU Metric Calculation
+			const cpus = os.cpus();
+			const loadAvg = os.loadavg()[0];
+			const cpuPercent = Math.min(Math.round((loadAvg / cpus.length) * 100) || 12, 99);
 
 			const now = new Date();
 			const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -166,12 +171,12 @@ module.exports = {
 			ctx.fillText(`${dateStr}  •  ${dayStr}`, width - 85, 136);
 			ctx.restore();
 
-			// CENTER HALF TIME WIDGET (ENLARGED & BUG FIXED)
+			// CENTER HALF TIME WIDGET
 			const centerX = width / 2;
 			const centerY = 530;
 			const radius = 260;
 
-			ctx.save(); // Center section context save
+			ctx.save();
 			ctx.beginPath();
 			ctx.arc(centerX, centerY, radius + 30, 0, Math.PI * 2);
 			ctx.fillStyle = "rgba(0, 210, 255, 0.04)";
@@ -282,7 +287,7 @@ module.exports = {
 			ctx.fillText("● SYSTEM ONLINE", centerX, centerY + 166);
 			ctx.restore();
 
-			ctx.restore(); // Center section context restore (FIXED CANVAS LEAK)
+			ctx.restore();
 
 			// LEFT CARD 1: BOT INFORMATION
 			ctx.save();
@@ -363,7 +368,7 @@ module.exports = {
 			ctx.stroke();
 
 			const perfItems = [
-				{ label: "CPU Usage", val: "12.4%", pct: 12, color: "#00d2ff" },
+				{ label: "CPU Usage", val: `${cpuPercent}%`, pct: cpuPercent, color: "#00d2ff" },
 				{ label: "RAM Usage", val: `${memMB} MB`, pct: ramPercent, color: "#9d4edd" },
 				{ label: "Ping Speed", val: "24 ms", pct: 24, color: "#00ff88" },
 				{ label: "Server Status", val: "OPTIMAL (100%)", pct: 100, color: "#ff7b00" },
@@ -532,8 +537,9 @@ module.exports = {
 
 			const msgStream = fs.createReadStream(imgPath);
 			
+			// Only image attachment sent, no body text included
 			const replyMsg = await message.reply({
-				body:`,
+				body: "",
 				attachment: msgStream
 			});
 
@@ -541,21 +547,13 @@ module.exports = {
 
 		} catch (err) {
 			console.error("Uptcard Command Error:", err);
-			return message.reply(
-`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-───────────────
-» ❌ 𝐅𝐀𝐈🇱𝐄𝐃 𝐓𝐎 
-» 🎨 𝐆𝐄𝐍𝐄𝐑𝐀𝐓𝐄 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃
-───────────────
-» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`
-			);
+			return message.reply("❌ Dashboard Card তৈরি করতে ব্যর্থ হয়েছে!");
 		} finally {
-			// Guaranteed file cleanup to prevent memory leaks
 			setTimeout(() => {
 				if (fs.existsSync(imgPath)) {
 					fs.unlinkSync(imgPath);
 				}
-			}, 3000);
+			}, 5000);
 		}
 	}
 };
