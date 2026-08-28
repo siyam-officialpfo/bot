@@ -47,12 +47,12 @@ module.exports = {
 	config: {
 		name: "uid",
 		aliases: ["id", "userid"],
-		version: "3.0",
+		version: "3.2",
 		author: LOCKED_AUTHOR,
 		countDown: 3,
 		role: 0,
 		description: {
-			en: "Get real FB user name & UID with auto-loading message delete"
+			en: "Get real FB user name & UID card"
 		},
 		category: "user"
 	},
@@ -62,7 +62,7 @@ module.exports = {
 			module.exports.config.author = LOCKED_AUTHOR;
 		}
 
-		const waitMsg = await message.reply("✄-------");
+		const waitMsg = await message.reply("✄------------");
 
 		const cacheDir = path.join(__dirname, "cache");
 		if (!fs.existsSync(cacheDir)) {
@@ -103,9 +103,34 @@ module.exports = {
 			const canvas = createCanvas(width, height);
 			const ctx = canvas.getContext("2d");
 
+			// Base Deep Black Background
 			ctx.fillStyle = "#020204";
 			ctx.fillRect(0, 0, width, height);
 
+			// Multi-color Cyber Neon Light Glow Layer
+			ctx.save();
+			const orbCyan = ctx.createRadialGradient(180, 100, 10, 180, 100, 320);
+			orbCyan.addColorStop(0, "rgba(0, 245, 212, 0.25)");
+			orbCyan.addColorStop(0.5, "rgba(0, 245, 212, 0.08)");
+			orbCyan.addColorStop(1, "transparent");
+			ctx.fillStyle = orbCyan;
+			ctx.fillRect(0, 0, width, height);
+
+			const orbMagenta = ctx.createRadialGradient(720, 320, 10, 720, 320, 350);
+			orbMagenta.addColorStop(0, "rgba(255, 0, 127, 0.22)");
+			orbMagenta.addColorStop(0.5, "rgba(255, 0, 127, 0.07)");
+			orbMagenta.addColorStop(1, "transparent");
+			ctx.fillStyle = orbMagenta;
+			ctx.fillRect(0, 0, width, height);
+
+			const orbPurple = ctx.createRadialGradient(425, 380, 10, 425, 380, 280);
+			orbPurple.addColorStop(0, "rgba(112, 0, 255, 0.20)");
+			orbPurple.addColorStop(1, "transparent");
+			ctx.fillStyle = orbPurple;
+			ctx.fillRect(0, 0, width, height);
+			ctx.restore();
+
+			// Grid Overlay
 			ctx.save();
 			ctx.strokeStyle = "rgba(0, 245, 212, 0.04)";
 			ctx.lineWidth = 1;
@@ -123,20 +148,7 @@ module.exports = {
 			}
 			ctx.restore();
 
-			ctx.save();
-			const orb1 = ctx.createRadialGradient(150, 210, 5, 150, 210, 300);
-			orb1.addColorStop(0, "rgba(0, 245, 212, 0.15)");
-			orb1.addColorStop(1, "transparent");
-			ctx.fillStyle = orb1;
-			ctx.fillRect(0, 0, width, height);
-
-			const orb2 = ctx.createRadialGradient(700, 210, 5, 700, 210, 350);
-			orb2.addColorStop(0, "rgba(255, 0, 127, 0.12)");
-			orb2.addColorStop(1, "transparent");
-			ctx.fillStyle = orb2;
-			ctx.fillRect(0, 0, width, height);
-			ctx.restore();
-
+			// Main Card
 			ctx.save();
 			drawRoundRect(ctx, 25, 25, width - 50, height - 50, 22);
 			ctx.fillStyle = "rgba(8, 10, 18, 0.92)";
@@ -156,6 +168,7 @@ module.exports = {
 			ctx.stroke();
 			ctx.restore();
 
+			// Hexagon Profile Frame
 			const hexX = 160;
 			const hexY = 210;
 			const hexRadius = 110;
@@ -254,7 +267,7 @@ module.exports = {
 			const msgStream = fs.createReadStream(imgPath);
 
 			return await message.reply({
-				body: `Name: ${displayUserName}\nUID: ${targetID}`,
+				body: `${targetID}`,
 				attachment: msgStream
 			});
 
@@ -267,7 +280,6 @@ module.exports = {
 					api.unsendMessage(waitMsg.messageID);
 				}
 			}
-			return message.reply("❌ Card creation failed!");
 		} finally {
 			setTimeout(() => {
 				if (fs.existsSync(imgPath)) {
