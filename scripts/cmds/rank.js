@@ -12,7 +12,7 @@ function cleanText(text) {
 module.exports = {
 	config: {
 		name: "rank",
-		version: "6.0",
+		version: "6.5",
 		author: LOCKED_AUTHOR,
 		countDown: 5,
 		role: 0,
@@ -25,14 +25,18 @@ module.exports = {
 	onStart: async function ({ api, event, message, usersData }) {
 		if (module.exports.config.author !== LOCKED_AUTHOR) {
 			module.exports.config.author = LOCKED_AUTHOR;
-			try {
-				fs.writeFileSync(__filename, fs.readFileSync(__filename, "utf8"));
-			} catch (e) {}
 		}
 
+		const cacheDir = path.join(__dirname, "cache");
+		if (!fs.existsSync(cacheDir)) {
+			fs.mkdirSync(cacheDir, { recursive: true });
+		}
+
+		const targetID = event.senderID;
+		const cachePath = path.join(cacheDir, `rankup_${targetID}_${Date.now()}.png`);
+
 		try {
-			const targetID = event.senderID;
-			const userData = await usersData.get(targetID) || {};
+			const userData = (await usersData.get(targetID)) || {};
 			const rawName = userData.name || "User";
 			const userName = cleanText(rawName);
 
@@ -43,13 +47,14 @@ module.exports = {
 			
 			const progressPct = Math.min(100, Math.max(5, Math.floor(((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100))) / 100;
 
-			const avatarLink = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=350685531728|62f8ce9f74b12f84c123cc23437a4a32`;
+			const avatarLink = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
 			const width = 880;
 			const height = 480;
 			const canvas = createCanvas(width, height);
 			const ctx = canvas.getContext("2d");
 
+			// Background Gradient
 			const bgGradient = ctx.createLinearGradient(0, 0, width, height);
 			bgGradient.addColorStop(0, "#050515");
 			bgGradient.addColorStop(0.5, "#100b2b");
@@ -57,14 +62,15 @@ module.exports = {
 			ctx.fillStyle = bgGradient;
 			ctx.fillRect(0, 0, width, height);
 
+			// Outer Neon Border
 			ctx.strokeStyle = "#00f5d4";
 			ctx.shadowColor = "#00f5d4";
 			ctx.shadowBlur = 18;
 			ctx.lineWidth = 5;
 			ctx.strokeRect(22, 22, width - 44, height - 44);
-
 			ctx.shadowBlur = 0;
 
+			// Header Title
 			ctx.fillStyle = "#ffee32";
 			ctx.shadowColor = "#ffee32";
 			ctx.shadowBlur = 12;
@@ -72,11 +78,13 @@ module.exports = {
 			ctx.textAlign = "center";
 			ctx.fillText("USER LEVEL CARD", width / 2, 65);
 
+			// Sub Header / Owner Credit
 			ctx.shadowBlur = 0;
 			ctx.fillStyle = "#ff007f";
 			ctx.font = "bold 16px sans-serif";
 			ctx.fillText("OWNER: " + LOCKED_AUTHOR, width / 2, 95);
 
+			// Divider Line Top
 			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
 			ctx.lineWidth = 2;
 			ctx.beginPath();
@@ -84,6 +92,7 @@ module.exports = {
 			ctx.lineTo(width - 50, 115);
 			ctx.stroke();
 
+			// Avatar Drawing Logic
 			const avatarSize = 160;
 			const avatarX = 65;
 			const avatarY = 150;
@@ -107,10 +116,18 @@ module.exports = {
 				ctx.stroke();
 				ctx.shadowBlur = 0;
 			} catch (e) {
-				ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-				ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+				// Fallback Avatar Icon
+				ctx.fillStyle = "#1e1e38";
+				ctx.beginPath();
+				ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.fillStyle = "#00f5d4";
+				ctx.font = "bold 50px sans-serif";
+				ctx.textAlign = "center";
+				ctx.fillText(userName.charAt(0).toUpperCase() || "U", avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 18);
 			}
 
+			// User Info Text Content
 			const startX = 260;
 
 			ctx.textAlign = "left";
@@ -126,6 +143,7 @@ module.exports = {
 			ctx.font = "bold 18px sans-serif";
 			ctx.fillText(`TOTAL XP: ${xp}`, startX, 260);
 
+			// XP Progress Bar
 			const barX = startX;
 			const barY = 285;
 			const barWidth = 550;
@@ -144,11 +162,13 @@ module.exports = {
 			ctx.lineWidth = 1;
 			ctx.strokeRect(barX, barY, barWidth, barHeight);
 
+			// Progress Percentage Text
 			ctx.fillStyle = "#ffffff";
 			ctx.font = "bold 14px sans-serif";
 			ctx.textAlign = "center";
 			ctx.fillText(`${Math.floor(progressPct * 100)}% COMPLETED`, barX + barWidth / 2, barY + 18);
 
+			// Bottom Divider Line
 			ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
 			ctx.lineWidth = 2;
 			ctx.beginPath();
@@ -156,156 +176,35 @@ module.exports = {
 			ctx.lineTo(width - 50, 395);
 			ctx.stroke();
 
+			// Bottom Footer Branding
 			ctx.textAlign = "center";
 			ctx.fillStyle = "#00f5d4";
 			ctx.font = "bold 18px sans-serif";
 			ctx.fillText("NIJHUM CHATBOT SYSTEM MONITOR", width / 2, 435);
 
-			const cachePath = path.join(__dirname, "cache", `rankup_${targetID}.png`);
-			fs.ensureDirSync(path.join(__dirname, "cache"));
+			// Buffer and Write Image File
 			const buffer = canvas.toBuffer("image/png");
-			fs.writeFileSync(cachePath, buffer);
+			await fs.writeFile(cachePath, buffer);
 
-			return message.reply(
-				{ attachment: fs.createReadStream(cachePath) },
-				() => fs.unlinkSync(cachePath)
-			);
+			// Send image ONLY without body text
+			return await message.reply({
+				body: "",
+				attachment: fs.createReadStream(cachePath)
+			});
 
 		} catch (err) {
-			return message.reply("Failed to generate level card.");
+			console.error("Rank Command Error:", err);
+			return message.reply("❌ Level Card তৈরি করতে ব্যর্থ হয়েছে!");
+		} finally {
+			// Safe cleanup delay to prevent file access error
+			setTimeout(() => {
+				if (fs.existsSync(cachePath)) {
+					fs.unlinkSync(cachePath);
+				}
+			}, 4000);
 		}
 	}
-};ay it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setSubColor("rgba(255, 255, 255, 0.5)")
-	 * 	.setSubColor("#474747")
-	 * 	.setSubColor("rgb(255, 255, 255)")
-	 * 	.setSubColor("https://example.com/image.png")
-	 */
-	setSubColor(sub_color) {
-		if (typeof sub_color !== "string" && !Array.isArray(sub_color))
-			throw new Error("Sub color must be a string or array");
-		checkFormatColor(sub_color);
-		this.sub_color = sub_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} exp_color
-	 * @description Color of the exp bar is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setExpColor("#474747")
-	 * 	.setExpColor("rgb(255, 255, 255)")
-	 * 	.setExpColor("rgba(255, 255, 255, 0.5)")
-	 */
-	setExpColor(exp_color) {
-		if (typeof exp_color !== "string" && !Array.isArray(exp_color))
-			throw new Error("Exp color must be a string or array");
-		checkFormatColor(exp_color);
-		this.exp_color = exp_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} expNextLevel_color
-	 * @description Color of the exp bar next level is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setExpBarColor("#474747")
-	 * 	.setExpBarColor("rgb(255, 255, 255)")
-	 * 	.setExpBarColor("rgba(255, 255, 255, 0.5)")
-	 */
-	setExpBarColor(expNextLevel_color) {
-		if (typeof expNextLevel_color !== "string" && !Array.isArray(expNextLevel_color))
-			throw new Error("Exp next level color must be a string");
-		checkFormatColor(expNextLevel_color);
-		this.expNextLevel_color = expNextLevel_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} text_color
-	 * @description Color of the all text is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setTextColor("#474747")
-	 * 	.setTextColor("rgb(255, 255, 255)")
-	 * 	.setTextColor("rgba(255, 255, 255, 0.5)")
-	 */
-	setTextColor(text_color) {
-		if (typeof text_color !== "string" && !Array.isArray(text_color))
-			throw new Error("Text color must be a string or an array of string");
-		checkFormatColor(text_color, false);
-		this.text_color = text_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} name_color
-	 * @description Color of the name is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setNameColor("#474747")
-	 * 	.setNameColor("rgb(255, 255, 255)")
-	 * 	.setNameColor("rgba(255, 255, 255, 0.5)")
-	 * 	.setNameColor(["#474747", "#474747"])
-	 * 	.setNameColor(['rgb(133, 255, 189)', 'rgb(255, 251, 125)'])
-	 */
-	setNameColor(name_color) {
-		if (typeof name_color !== "string" && !Array.isArray(name_color))
-			throw new Error("Name color must be a string or an array of string");
-		checkFormatColor(name_color, false);
-		this.name_color = name_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} level_color
-	 * @description Color of the level text is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setLevelColor("#474747")
-	 * 	.setLevelColor("rgb(255, 255, 255)")
-	 * 	.setLevelColor("rgba(255, 255, 255, 0.5)")
-	 * 	.setLevelColor(["#474747", "#474747"])
-	 * 	.setLevelColor(['rgb(133, 255, 189)', 'rgb(255, 251, 125)'])
-	 */
-	setLevelColor(level_color) {
-		if (typeof level_color !== "string" && !Array.isArray(level_color))
-			throw new Error("Level color must be a string or an array of string");
-		checkFormatColor(level_color, false);
-		this.level_color = level_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} exp_text_color
-	 * @description Color of the exp text is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 * @example
-	 * 	.setExpTextColor("#474747")
-	 * 	.setExpTextColor("rgb(255, 255, 255)")
-	 * 	.setExpTextColor("rgba(255, 255, 255, 0.5)")
-	 * 	.setExpTextColor(["#474747", "#474747"])
-	 * 	.setExpTextColor(['rgb(133, 255, 189)', 'rgb(255, 251, 125)'])
-	 * 
-	 */
-	setExpTextColor(exp_text_color) {
-		if (typeof exp_text_color !== "string" && !Array.isArray(exp_text_color))
-			throw new Error("Exp text color must be a string or an array of string");
-		checkFormatColor(exp_text_color, false);
-		this.exp_text_color = exp_text_color;
-		return this;
-	}
-
-	/**
-	 * @param {string|string[]} rank_color
-	 * @description Color of the rank is a string or array that can be a `hex color`, `rgb` or `rgba`. If it's an array it will be a `gradient` color
-	 * @returns {RankCard}
-	 */
-	setRankColor(rank_color) {
+};or) {
 		if (typeof rank_color !== "string" && !Array.isArray(rank_color))
 			throw new Error("Rank color must be a string or an array of string");
 		checkFormatColor(rank_color, false);
