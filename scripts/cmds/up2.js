@@ -533,13 +533,7 @@ module.exports = {
 			const msgStream = fs.createReadStream(imgPath);
 			
 			const replyMsg = await message.reply({
-				body: 
-`» 👑 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍 👑
-───────────────
-» ⚡ 𝐁𝐎𝐓 𝐇𝐀𝐋𝐅 𝐓𝐈𝐌𝐄 𝐒𝐓𝐀𝐓𝐔𝐒
-» 🎨 𝐃𝐀𝐑𝐊 𝐆𝐋𝐀𝐒𝐒 𝐃𝐀𝐒𝐇𝐁𝐎𝐀𝐑𝐃
-───────────────
-» 🧚‍♀️ ‿𝗡𝗜𝗝𝗛𝗨𝗠 𝗖𝗛𝗔𝗧𝗕𝗢𝗧`,
+				body:`,
 				attachment: msgStream
 			});
 
