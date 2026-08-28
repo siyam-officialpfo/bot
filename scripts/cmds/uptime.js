@@ -6,8 +6,8 @@ const os = require("os");
 
 module.exports = {
 	config: {
-		name: "up2",
-		aliases: ["status", "আপ2", "uptime2"],
+		name: "up",
+		aliases: ["status", "আপ", "uptime"],
 		version: "6.0",
 		author: LOCKED_AUTHOR,
 		countDown: 5,
