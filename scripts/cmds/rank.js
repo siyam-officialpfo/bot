@@ -55,7 +55,7 @@ module.exports = {
 			fs.mkdirSync(cacheDir, { recursive: true });
 		}
 
-		const targetID = Object.keys(event.mentions)[0] || event.senderID;
+		const targetID = (event.mentions && Object.keys(event.mentions)[0]) || event.senderID;
 		const imgPath = path.join(cacheDir, `profile_${targetID}_${Date.now()}.png`);
 
 		try {
@@ -388,81 +388,7 @@ module.exports = {
 
 		} catch (err) {
 			console.error("Profile Command Error:", err);
-			return message.reply("❌ Profile Card তৈরি করতে ব্যর্থ হয়েছে!");
-		} finally {
-			setTimeout(() => {
-				if (fs.existsSync(imgPath)) {
-					fs.unlinkSync(imgPath);
-				}
-			}, 5000);
-		}
-	}
-};yle = "#ffee32";
-			ctx.shadowColor = "#ffee32";
-			ctx.shadowBlur = 10;
-			ctx.fillText("LEVEL PROGRESSION", 690, 800);
-			ctx.shadowBlur = 0;
-
-			const currentLevelXp = Math.pow(level / 0.1, 2);
-			const nextLevelXp = Math.pow((level + 1) / 0.1, 2);
-			const pct = Math.min(100, Math.max(8, Math.floor(((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100)));
-
-			ctx.font = "bold 20px sans-serif";
-			ctx.fillStyle = "#00f5d4";
-			ctx.textAlign = "right";
-			ctx.fillText(`${pct}% TO LEVEL ${level + 1}`, 1800, 800);
-			ctx.textAlign = "left";
-
-			const pBarX = 690;
-			const pBarY = 825;
-			const pBarW = 1110;
-			const pBarH = 32;
-
-			ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-			drawRoundRect(ctx, pBarX, pBarY, pBarW, pBarH, 16);
-			ctx.fill();
-
-			const fillW = Math.max(30, (pBarW * pct) / 100);
-			const barGrad = ctx.createLinearGradient(pBarX, 0, pBarX + fillW, 0);
-			barGrad.addColorStop(0, "#ff007f");
-			barGrad.addColorStop(0.5, "#ffee32");
-			barGrad.addColorStop(1, "#00f5d4");
-
-			ctx.fillStyle = barGrad;
-			ctx.shadowColor = "#00f5d4";
-			ctx.shadowBlur = 14;
-			drawRoundRect(ctx, pBarX, pBarY, fillW, pBarH, 16);
-			ctx.fill();
-			ctx.shadowBlur = 0;
-
-			ctx.font = "bold 16px sans-serif";
-			ctx.fillStyle = "#ffffff";
-			ctx.textAlign = "center";
-			ctx.fillText(`NEXT LEVEL IN ${(nextLevelXp - xp).toFixed(0)} XP`, pBarX + pBarW / 2, pBarY + 22);
-			ctx.restore();
-
-			ctx.save();
-			ctx.font = "bold 22px sans-serif";
-			ctx.fillStyle = "#ffffff";
-			ctx.shadowColor = "#ff007f";
-			ctx.shadowBlur = 12;
-			ctx.textAlign = "center";
-			ctx.fillText(`${authorClean} CHATBOT * CYBER VIP CARD SYSTEM EDITION`, width / 2, 1030);
-			ctx.restore();
-
-			const buffer = canvas.toBuffer("image/png");
-			await fs.writeFile(imgPath, buffer);
-
-			const msgStream = fs.createReadStream(imgPath);
-
-			return await message.reply({
-				body: "",
-				attachment: msgStream
-			});
-
-		} catch (err) {
-			console.error("Profile Command Error:", err);
-			return message.reply("❌ Profile Card তৈরি করতে ব্যর্থ হয়েছে!");
+			return message.reply("❌ Profile Card তৈরি করতে ব্যর্থ হয়েছে!");
 		} finally {
 			setTimeout(() => {
 				if (fs.existsSync(imgPath)) {
