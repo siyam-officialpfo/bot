@@ -1,215 +1,254 @@
+const LOCKED_AUTHOR = "SIYAM-HASAN";
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs-extra");
 const path = require("path");
-const axios = require("axios");
-const { createCanvas, loadImage, registerFont } = require("canvas");
-
 
 module.exports = {
-  config: {
-    name: "uid",
-    version: "0.0.1",
-    author: "MR_FARHAN",
-    countDown: 5,
-    role: 0,
-    shortDescription: {
-      en: "Get user's UID and Stylist Banner"
-    },
-    longDescription: {
-      en: "Generates an advanced Cool style banner with User ID and Avatar."
-    },
-    category: "info",
-    guide: {
-      en: "{pn} [mention | reply | leave blank]"
-    }
-  },
+	config: {
+		name: "uid",
+		aliases: ["id", "ইউআইডি"],
+		version: "5.0",
+		author: LOCKED_AUTHOR,
+		countDown: 5,
+		role: 0,
+		description: {
+			en: "Get user UID with premium profile card"
+		},
+		category: "info",
+		guide: {
+			en: "{pn}\n{pn} @mention\n{pn} (reply)"
+		}
+	},
 
+	onStart: async function ({ api, event }) {
+		if (module.exports.config.author !== LOCKED_AUTHOR) {
+			module.exports.config.author = LOCKED_AUTHOR;
+		}
 
-  onStart: async function ({ api, event, args, usersData }) {
-    const { threadID, messageID, senderID, type, messageReply, mentions } = event;
-    const cachePath = path.join(__dirname, "cache", "uid_card.png");
+		const { threadID, messageID, senderID, mentions, type, messageReply } = event;
 
+		try {
+			let targetID = senderID;
 
-    // 1. Find Target User ID
-    let targetID = senderID;
-    if (type === "message_reply") {
-      targetID = messageReply.senderID;
-    } else if (Object.keys(mentions).length > 0) {
-      targetID = Object.keys(mentions)[0];
-    } else if (args.length > 0) {
-      // Check if argument is a number (UID)
-      if (!isNaN(args[0])) {
-        targetID = args[0];
-      }
-      // Note: UID from vanity URL requires extra API calls, skipping for basic stability
-    }
+			if (Object.keys(mentions).length > 0) {
+				targetID = Object.keys(mentions)[0];
+			} else if (type === "message_reply" && messageReply?.senderID) {
+				targetID = messageReply.senderID;
+			}
 
+			let userName = "Unknown User";
 
-    // Send processing message
-    const processMsg = await api.sendMessage("-ˋˏ✄━═━═━═", threadID);
+			try {
+				const userInfo = await api.getUserInfo(targetID);
+				if (userInfo && userInfo[targetID] && userInfo[targetID].name) {
+					userName = userInfo[targetID].name;
+				}
+			} catch (e) {
+				try {
+					const info = await api.getUserInfo([targetID]);
+					if (info && info[targetID] && info[targetID].name) {
+						userName = info[targetID].name;
+					}
+				} catch (err) {}
+			}
 
+			const width = 820;
+			const height = 480;
+			const canvas = createCanvas(width, height);
+			const ctx = canvas.getContext("2d");
 
-    try {
-      // 2. Fetch User Data
-      const userData = await usersData.get(targetID);
-      const name = userData.name || "Unknown User";
-      const username = name.toUpperCase();
+			const bg = ctx.createLinearGradient(0, 0, width, height);
+			bg.addColorStop(0, "#1c0a16");
+			bg.addColorStop(0.3, "#2d1230");
+			bg.addColorStop(0.6, "#3b1540");
+			bg.addColorStop(1, "#1a0b1c");
+			ctx.fillStyle = bg;
+			ctx.fillRect(0, 0, width, height);
 
+			const light1 = ctx.createRadialGradient(100, 60, 10, 120, 120, 300);
+			light1.addColorStop(0, "rgba(251, 113, 133, 0.35)");
+			light1.addColorStop(1, "rgba(251, 113, 133, 0)");
+			ctx.fillStyle = light1;
+			ctx.fillRect(0, 0, width, height);
 
-      // 3. Setup Canvas (1200x500 - High Quality Banner)
-      const width = 1200;
-      const height = 500;
-      const canvas = createCanvas(width, height);
-      const ctx = canvas.getContext("2d");
+			const light2 = ctx.createRadialGradient(720, 80, 20, 680, 160, 340);
+			light2.addColorStop(0, "rgba(192, 132, 252, 0.3)");
+			light2.addColorStop(1, "rgba(192, 132, 252, 0)");
+			ctx.fillStyle = light2;
+			ctx.fillRect(0, 0, width, height);
 
+			const light3 = ctx.createRadialGradient(400, 450, 30, 400, 380, 280);
+			light3.addColorStop(0, "rgba(244, 114, 182, 0.25)");
+			light3.addColorStop(1, "rgba(244, 114, 182, 0)");
+			ctx.fillStyle = light3;
+			ctx.fillRect(0, 0, width, height);
 
-      // --- BACKGROUND DESIGN ---
-      
-      // Dark Base
-      ctx.fillStyle = "#050505";
-      ctx.fillRect(0, 0, width, height);
+			const light4 = ctx.createRadialGradient(200, 400, 20, 180, 350, 200);
+			light4.addColorStop(0, "rgba(253, 164, 175, 0.2)");
+			light4.addColorStop(1, "rgba(253, 164, 175, 0)");
+			ctx.fillStyle = light4;
+			ctx.fillRect(0, 0, width, height);
 
+			ctx.save();
+			ctx.shadowColor = "rgba(244, 114, 182, 0.4)";
+			ctx.shadowBlur = 32;
+			roundRect(ctx, 20, 20, 780, 440, 26);
+			ctx.fillStyle = "rgba(25, 12, 32, 0.9)";
+			ctx.fill();
+			ctx.restore();
 
-      // Sci-Fi Grid Background
-      ctx.strokeStyle = "rgba(0, 255, 255, 0.1)";
-      ctx.lineWidth = 2;
-      for (let i = 0; i < width; i += 60) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, height);
-        ctx.stroke();
-      }
-      for (let i = 0; i < height; i += 60) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(width, i);
-        ctx.stroke();
-      }
+			ctx.strokeStyle = "rgba(251, 113, 133, 0.6)";
+			ctx.lineWidth = 3;
+			roundRect(ctx, 20, 20, 780, 440, 26);
+			ctx.stroke();
 
+			ctx.strokeStyle = "rgba(192, 132, 252, 0.3)";
+			ctx.lineWidth = 1.5;
+			roundRect(ctx, 32, 32, 756, 416, 20);
+			ctx.stroke();
 
-      // Neon Glow Accents (Cyberpunk Style)
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
-      gradient.addColorStop(0, "#00f260");
-      gradient.addColorStop(1, "#0575e6");
-      
-      // Corner Decorations
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(300, 0);
-      ctx.lineTo(250, 50);
-      ctx.lineTo(0, 50);
-      ctx.fill();
+			const headerGrad = ctx.createLinearGradient(45, 40, 775, 40);
+			headerGrad.addColorStop(0, "#fb7185");
+			headerGrad.addColorStop(0.5, "#e879f9");
+			headerGrad.addColorStop(1, "#c084fc");
+			ctx.fillStyle = headerGrad;
+			roundRect(ctx, 45, 40, 730, 52, 14);
+			ctx.fill();
 
+			ctx.font = "bold 28px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.textAlign = "center";
+			ctx.shadowColor = "rgba(0,0,0,0.3)";
+			ctx.shadowBlur = 6;
+			ctx.fillText("UID", 410, 76);
+			ctx.shadowBlur = 0;
 
-      // Bottom Right Deco
-      ctx.beginPath();
-      ctx.moveTo(width, height);
-      ctx.lineTo(width - 300, height);
-      ctx.lineTo(width - 250, height - 50);
-      ctx.lineTo(width, height - 50);
-      ctx.fill();
+			const avatarSize = 175;
+			const avatarX = 70;
+			const avatarY = 120;
 
+			ctx.save();
+			ctx.beginPath();
+			ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 7, 0, Math.PI * 2);
+			const ringGrad = ctx.createLinearGradient(avatarX, avatarY, avatarX + avatarSize, avatarY + avatarSize);
+			ringGrad.addColorStop(0, "#fb7185");
+			ringGrad.addColorStop(0.5, "#e879f9");
+			ringGrad.addColorStop(1, "#c084fc");
+			ctx.strokeStyle = ringGrad;
+			ctx.lineWidth = 6;
+			ctx.stroke();
+			ctx.restore();
 
-      // --- AVATAR HANDLING (Fixes "Profile picture dekhay na") ---
-      // We use a high-res public graph token URL or fallback
-      const avatarUrl = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
-      
-      // Download Buffer using Axios (Most reliable method)
-      let avatarBuffer;
-      try {
-        const response = await axios.get(avatarUrl, { responseType: "arraybuffer" });
-        avatarBuffer = response.data;
-      } catch (e) {
-        // Fallback if HD fails
-        const fallbackUrl = `https://graph.facebook.com/${targetID}/picture?type=large`;
-        const response = await axios.get(fallbackUrl, { responseType: "arraybuffer" });
-        avatarBuffer = response.data;
-      }
-      
-      const avatarImg = await loadImage(avatarBuffer);
+			ctx.save();
+			ctx.beginPath();
+			ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+			ctx.closePath();
+			ctx.clip();
 
+			try {
+				const avatarUrl = `https://graph.facebook.com/${targetID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+				const avatar = await loadImage(avatarUrl);
+				ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+			} catch (e) {
+				ctx.fillStyle = "#4a1d3a";
+				ctx.fillRect(avatarX, avatarY, avatarSize, avatarSize);
+				ctx.font = "bold 42px Arial";
+				ctx.fillStyle = "#f9a8d4";
+				ctx.textAlign = "center";
+				ctx.fillText("?", avatarX + avatarSize / 2, avatarY + avatarSize / 2 + 16);
+			}
+			ctx.restore();
 
-      // Hexagon Avatar Frame
-      const centerX = 250;
-      const centerY = 250;
-      const hexSize = 160;
+			ctx.fillStyle = "rgba(45, 20, 50, 0.85)";
+			roundRect(ctx, 290, 115, 480, 100, 16);
+			ctx.fill();
 
+			ctx.fillStyle = "#fb7185";
+			ctx.shadowColor = "#fb7185";
+			ctx.shadowBlur = 10;
+			roundRect(ctx, 290, 115, 8, 100, 6);
+			ctx.fill();
+			ctx.shadowBlur = 0;
 
-      ctx.save();
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        ctx.lineTo(centerX + hexSize * Math.cos(i * 2 * Math.PI / 6), centerY + hexSize * Math.sin(i * 2 * Math.PI / 6));
-      }
-      ctx.closePath();
-      ctx.lineWidth = 10;
-      ctx.strokeStyle = "#00ffff"; // Cyan Border
-      ctx.stroke();
-      ctx.shadowColor = "#00ffff";
-      ctx.shadowBlur = 30;
-      ctx.stroke(); // Double stroke for glow
-      ctx.shadowBlur = 0;
-      
-      // Clip image inside Hexagon
-      ctx.clip(); 
-      ctx.drawImage(avatarImg, centerX - hexSize, centerY - hexSize, hexSize * 2, hexSize * 2);
-      ctx.restore();
+			ctx.font = "bold 15px Arial";
+			ctx.fillStyle = "#f9a8d4";
+			ctx.textAlign = "left";
+			ctx.fillText("USER NAME", 320, 150);
 
+			ctx.font = "bold 27px Arial";
+			ctx.fillStyle = "#ffffff";
+			const displayName = userName.length > 22 ? userName.slice(0, 22) + "..." : userName;
+			ctx.fillText(displayName, 320, 190);
 
-      // --- TEXT & DATA ---
+			ctx.fillStyle = "rgba(45, 20, 50, 0.85)";
+			roundRect(ctx, 290, 235, 480, 100, 16);
+			ctx.fill();
 
+			ctx.fillStyle = "#c084fc";
+			ctx.shadowColor = "#c084fc";
+			ctx.shadowBlur = 10;
+			roundRect(ctx, 290, 235, 8, 100, 6);
+			ctx.fill();
+			ctx.shadowBlur = 0;
 
-      // Name
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 60px Arial"; // Try sans-serif if font file missing
-      ctx.shadowColor = "#000000";
-      ctx.shadowBlur = 10;
-      ctx.fillText(username, 480, 200);
+			ctx.font = "bold 15px Arial";
+			ctx.fillStyle = "#e9d5ff";
+			ctx.fillText("USER ID", 320, 270);
 
+			ctx.font = "bold 26px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.fillText(String(targetID), 320, 310);
 
-      // UID Label
-      ctx.fillStyle = "#00ffff";
-      ctx.font = "bold 35px Courier New";
-      ctx.shadowColor = "#00ffff";
-      ctx.shadowBlur = 15;
-      ctx.fillText(`UID: ${targetID}`, 480, 270);
+			ctx.fillStyle = "rgba(50, 20, 55, 0.9)";
+			roundRect(ctx, 50, 360, 720, 70, 16);
+			ctx.fill();
 
+			const bottomGrad = ctx.createLinearGradient(50, 360, 770, 360);
+			bottomGrad.addColorStop(0, "#fb7185");
+			bottomGrad.addColorStop(0.5, "#e879f9");
+			bottomGrad.addColorStop(1, "#c084fc");
+			ctx.fillStyle = bottomGrad;
+			ctx.fillRect(50, 360, 720, 5);
 
-      // System Text
-      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-      ctx.font = "25px Courier New";
-      ctx.shadowBlur = 0;
-      ctx.fillText("/// IDENTITY VERIFIED /// ", 480, 330);
-      ctx.fillText("⚡ POWERED BY: 𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍", 480, 370);
+			ctx.font = "bold 26px Arial";
+			ctx.fillStyle = "#ffffff";
+			ctx.textAlign = "center";
+			ctx.shadowColor = "rgba(0,0,0,0.3)";
+			ctx.shadowBlur = 5;
+			ctx.fillText("Owner : Siyam Hasan", 410, 410);
+			ctx.shadowBlur = 0;
 
+			const cachePath = path.join(__dirname, "cache");
+			await fs.ensureDir(cachePath);
+			const filePath = path.join(cachePath, `uid_${Date.now()}.png`);
+			await fs.writeFile(filePath, canvas.toBuffer("image/png"));
 
-      // Decorative Bar Code Lines
-      ctx.fillStyle = "#ffffff";
-      for(let k=0; k<20; k++) {
-          let w = Math.random() * 10 + 2;
-          ctx.fillRect(480 + (k*20), 400, w, 20);
-      }
+			await api.sendMessage({
+				body: String(targetID),
+				attachment: fs.createReadStream(filePath)
+			}, threadID, messageID);
 
+			setTimeout(() => {
+				fs.unlink(filePath).catch(() => {});
+			}, 30000);
 
-      // --- SAVE & SEND ---
-      const buffer = canvas.toBuffer("image/png");
-      fs.writeFileSync(cachePath, buffer);
-
-
-      // Unsend processing message
-      api.unsendMessage(processMsg.messageID);
-
-
-      // Send Result
-      return api.sendMessage({
-        body: ` UID: ${targetID}`,
-        attachment: fs.createReadStream(cachePath)
-      }, threadID, () => fs.unlinkSync(cachePath), messageID);
-
-
-    } catch (error) {
-      console.error(error);
-      api.unsendMessage(processMsg.messageID);
-      return api.sendMessage("❌ Error generating image. details: " + error.message, threadID, messageID);
-    }
-  }
+		} catch (err) {
+			console.log(err);
+			return api.sendMessage("UID card generate korte problem hoise.", threadID, messageID);
+		}
+	}
 };
+
+function roundRect(ctx, x, y, w, h, r) {
+	ctx.beginPath();
+	ctx.moveTo(x + r, y);
+	ctx.lineTo(x + w - r, y);
+	ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+	ctx.lineTo(x + w, y + h - r);
+	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+	ctx.lineTo(x + r, y + h);
+	ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+	ctx.lineTo(x, y + r);
+	ctx.quadraticCurveTo(x, y, x + r, y);
+	ctx.closePath();
+    }
