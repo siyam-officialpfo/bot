@@ -3,7 +3,7 @@ module.exports = {
 		name: "badwords",
 		aliases: ["badword"],
 		version: "1.4",
-		author: "FARHAN-KHAN",
+		author: "𝆠፝𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒𝐀𝐍",
 		countDown: 5,
 		role: 1,
 		description: {
