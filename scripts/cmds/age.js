@@ -1,6 +1,6 @@
 const moment = require("moment-timezone");
 
-const AUTHOR = "𝐒𝐈𝐘𝐀𝐌-𝐇𝐀𝐒َان"; // 🔒 locked author
+const AUTHOR = "সিয়াম"; // 🔒 locked author
 
 module.exports = {
   config: {
@@ -151,7 +151,7 @@ module.exports = {
 
     } catch (e) {
       console.error(e);
-      return api.sendMessage("❌ বয়স গণনা করতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।", event.threadID);
+      return api.sendMessage("❌ বয়স গণনা করতে সমস্যা হয়েছে, অনুগ্রহ করে আবার চেষ্টা করুন।", event.t[...]
     }
   }
 };
